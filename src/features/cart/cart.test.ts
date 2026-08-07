@@ -24,8 +24,12 @@ describe('cart actions', () => {
   });
 
   it('discards malformed persisted entries', () => {
-    expect(sanitizeStoredItems([{ product: { ...product, id: 0 }, quantity: 1 }, { product, quantity: 1.5 }, { product, quantity: 2 }])).toEqual([
-      { product, quantity: 2 },
-    ]);
+    expect(
+      sanitizeStoredItems([
+        { product: { ...product, id: 0 }, quantity: 1 },
+        { product, quantity: 1.5 },
+        { product, quantity: 2 },
+      ])
+    ).toEqual([{ product, quantity: 2 }]);
   });
 });

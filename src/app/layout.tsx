@@ -21,7 +21,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   applicationName: 'ByteForge',
   title: 'ByteForge — Gaming Gear & IT Tech Shop',
-  description: 'ByteForge is a practical destination for gaming peripherals, GPUs, monitors, headsets, and IT gear.',
+  description:
+    'ByteForge is a practical destination for gaming peripherals, GPUs, monitors, headsets, and IT gear.',
   icons: {
     icon: [{ url: '/assets/favicon.ico', type: 'image/x-icon' }],
   },
@@ -40,7 +41,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${dmSans.variable} light`}>
       <body className={dmSans.className}>
-        <ThemeProvider><CartProvider>{children}</CartProvider></ThemeProvider>
+        <ThemeProvider>
+          <CartProvider>{children}</CartProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

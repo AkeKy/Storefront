@@ -42,7 +42,7 @@ vi.mock('@/features/catalog/catalog-service', () => ({
       const filteredProducts = products.filter(
         (product) =>
           product.name.toLowerCase().includes(normalizedQuery) ||
-          product.brand.toLowerCase().includes(normalizedQuery),
+          product.brand.toLowerCase().includes(normalizedQuery)
       );
 
       return Promise.resolve({ products: filteredProducts, total: filteredProducts.length });
@@ -54,7 +54,11 @@ describe('ProductsContent', () => {
   it('filters products when a customer searches by brand', async () => {
     const user = userEvent.setup();
 
-    render(<CartProvider><ProductsContent initialCategoryId={undefined} /></CartProvider>);
+    render(
+      <CartProvider>
+        <ProductsContent initialCategoryId={undefined} />
+      </CartProvider>
+    );
 
     await screen.findByText('Razer DeathAdder V3');
     await user.type(screen.getByRole('searchbox', { name: /search products/i }), 'Keychron');
@@ -68,7 +72,11 @@ describe('ProductsContent', () => {
   it('keeps brand options available after a search has no matches', async () => {
     const user = userEvent.setup();
 
-    render(<CartProvider><ProductsContent initialCategoryId={undefined} /></CartProvider>);
+    render(
+      <CartProvider>
+        <ProductsContent initialCategoryId={undefined} />
+      </CartProvider>
+    );
 
     await screen.findByText('Razer DeathAdder V3');
     await user.type(screen.getByRole('searchbox', { name: /search products/i }), 'not-a-product');

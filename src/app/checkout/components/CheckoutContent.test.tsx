@@ -25,14 +25,22 @@ beforeEach(() => window.localStorage.clear());
 afterEach(() => createOrderMock.mockReset());
 
 it('blocks review until required delivery details are entered', async () => {
-  render(<CartProvider><CheckoutContent /></CartProvider>);
+  render(
+    <CartProvider>
+      <CheckoutContent />
+    </CartProvider>
+  );
   await userEvent.click(screen.getByRole('button', { name: /review order/i }));
   expect(await screen.findByText(/enter your name and delivery address/i)).toBeInTheDocument();
 });
 
 it('clears the validation alert after every invalid field is corrected', async () => {
   const user = userEvent.setup();
-  render(<CartProvider><CheckoutContent /></CartProvider>);
+  render(
+    <CartProvider>
+      <CheckoutContent />
+    </CartProvider>
+  );
 
   await user.click(screen.getByRole('button', { name: /review order/i }));
   expect(await screen.findByText(/enter your name and delivery address/i)).toBeInTheDocument();
@@ -50,16 +58,18 @@ it('clears the validation alert after every invalid field is corrected', async (
 });
 
 it('rejects malformed email, Thai phone, and postal code before review', () => {
-  expect(validateDeliveryForm({
-    email: 'not-an-email',
-    firstName: 'Ake',
-    lastName: 'Ky',
-    address: '99 ถนนสุขุมวิท',
-    city: 'วัฒนา',
-    province: 'กรุงเทพมหานคร',
-    postalCode: '101',
-    phone: '1234567',
-  })).toEqual({
+  expect(
+    validateDeliveryForm({
+      email: 'not-an-email',
+      firstName: 'Ake',
+      lastName: 'Ky',
+      address: '99 ถนนสุขุมวิท',
+      city: 'วัฒนา',
+      province: 'กรุงเทพมหานคร',
+      postalCode: '101',
+      phone: '1234567',
+    })
+  ).toEqual({
     email: 'Enter a valid email address.',
     postalCode: 'Enter a 5-digit postal code.',
     phone: 'Enter a Thai phone number starting with 0.',
@@ -67,23 +77,29 @@ it('rejects malformed email, Thai phone, and postal code before review', () => {
 });
 
 it('accepts delivery details with a valid Thai mobile number', () => {
-  expect(validateDeliveryForm({
-    email: 'ake@example.com',
-    firstName: 'Ake',
-    lastName: 'Ky',
-    address: '99 ถนนสุขุมวิท',
-    city: 'วัฒนา',
-    province: 'กรุงเทพมหานคร',
-    postalCode: '10110',
-    phone: '081-234-5678',
-  })).toEqual({});
+  expect(
+    validateDeliveryForm({
+      email: 'ake@example.com',
+      firstName: 'Ake',
+      lastName: 'Ky',
+      address: '99 ถนนสุขุมวิท',
+      city: 'วัฒนา',
+      province: 'กรุงเทพมหานคร',
+      postalCode: '10110',
+      phone: '081-234-5678',
+    })
+  ).toEqual({});
 });
 
 it('clears the cart after a configured API order succeeds', async () => {
   window.localStorage.setItem('byteforge-cart', JSON.stringify([{ product, quantity: 1 }]));
   createOrderMock.mockResolvedValue({ mode: 'submitted' });
   const user = userEvent.setup();
-  render(<CartProvider><CheckoutContent /></CartProvider>);
+  render(
+    <CartProvider>
+      <CheckoutContent />
+    </CartProvider>
+  );
 
   await screen.findByText(product.name);
   await user.type(screen.getByLabelText(/email address/i), 'ake@example.com');
@@ -98,14 +114,20 @@ it('clears the cart after a configured API order succeeds', async () => {
   await user.click(await screen.findByRole('button', { name: /submit order/i }));
 
   expect(await screen.findByText(/your cart has been cleared/i)).toBeInTheDocument();
-  await waitFor(() => expect(JSON.parse(window.localStorage.getItem('byteforge-cart') ?? 'null')).toEqual([]));
+  await waitFor(() =>
+    expect(JSON.parse(window.localStorage.getItem('byteforge-cart') ?? 'null')).toEqual([])
+  );
 });
 
 it('keeps a stored cart after a demo checkout preview', async () => {
   window.localStorage.setItem('byteforge-cart', JSON.stringify([{ product, quantity: 1 }]));
   createOrderMock.mockResolvedValue({ mode: 'demo' });
   const user = userEvent.setup();
-  render(<CartProvider><CheckoutContent /></CartProvider>);
+  render(
+    <CartProvider>
+      <CheckoutContent />
+    </CartProvider>
+  );
 
   await screen.findByText(product.name);
   await user.type(screen.getByLabelText(/email address/i), 'ake@example.com');
@@ -120,15 +142,28 @@ it('keeps a stored cart after a demo checkout preview', async () => {
   await user.click(await screen.findByRole('button', { name: /submit order/i }));
 
   expect(await screen.findByText(/your cart is unchanged/i)).toBeInTheDocument();
-  await waitFor(() => expect(JSON.parse(window.localStorage.getItem('byteforge-cart') ?? 'null')).toEqual([{ product, quantity: 1 }]));
+  await waitFor(() =>
+    expect(JSON.parse(window.localStorage.getItem('byteforge-cart') ?? 'null')).toEqual([
+      { product, quantity: 1 },
+    ])
+  );
 });
 
 it('prevents duplicate submissions while an order request is pending', async () => {
   window.localStorage.setItem('byteforge-cart', JSON.stringify([{ product, quantity: 1 }]));
   let resolveOrder: (result: { mode: 'submitted' }) => void;
-  createOrderMock.mockImplementation(() => new Promise((resolve) => { resolveOrder = resolve; }));
+  createOrderMock.mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        resolveOrder = resolve;
+      })
+  );
   const user = userEvent.setup();
-  render(<CartProvider><CheckoutContent /></CartProvider>);
+  render(
+    <CartProvider>
+      <CheckoutContent />
+    </CartProvider>
+  );
 
   await completeDeliveryDetails(user);
   const submitOrder = await screen.findByRole('button', { name: /submit order/i });
@@ -145,7 +180,11 @@ it('prevents duplicate submissions while an order request is pending', async () 
 
 it('shows the item subtotal as the checkout total without a delivery quote', async () => {
   window.localStorage.setItem('byteforge-cart', JSON.stringify([{ product, quantity: 1 }]));
-  render(<CartProvider><CheckoutContent /></CartProvider>);
+  render(
+    <CartProvider>
+      <CheckoutContent />
+    </CartProvider>
+  );
 
   await screen.findByText(product.name);
   expect(screen.getByText(/delivery quote unavailable in demo/i)).toBeInTheDocument();

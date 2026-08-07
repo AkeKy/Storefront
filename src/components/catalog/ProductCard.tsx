@@ -35,9 +35,15 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         <p className="text-sm font-semibold text-muted-foreground">{product.brand}</p>
         <h3 className="mt-1 text-lg font-bold text-card-foreground">{product.name}</h3>
         <div className="mt-5 flex items-center justify-between gap-3">
-          <p className="text-xl font-extrabold text-card-foreground">{priceFormatter.format(product.priceTHB)}</p>
+          <p className="text-xl font-extrabold text-card-foreground">
+            {priceFormatter.format(product.priceTHB)}
+          </p>
           <span
-            className={isInStock ? 'rounded-full bg-accent px-2.5 py-1 text-xs font-bold text-accent-foreground' : 'rounded-full bg-muted px-2.5 py-1 text-xs font-bold text-muted-foreground'}
+            className={
+              isInStock
+                ? 'rounded-full bg-accent px-2.5 py-1 text-xs font-bold text-accent-foreground'
+                : 'rounded-full bg-muted px-2.5 py-1 text-xs font-bold text-muted-foreground'
+            }
           >
             {isInStock ? 'In stock' : 'Out of stock'}
           </span>

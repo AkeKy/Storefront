@@ -38,18 +38,24 @@ export function removeItem(items: CartItem[], productId: number): CartItem[] {
 export function sanitizeStoredItems(value: unknown): CartItem[] {
   if (!Array.isArray(value)) return [];
   return value.filter((item): item is CartItem => {
-    if (!item || typeof item !== 'object' || !('product' in item) || !('quantity' in item)) return false;
+    if (!item || typeof item !== 'object' || !('product' in item) || !('quantity' in item))
+      return false;
     const { product, quantity } = item as CartItem;
     return Boolean(
       product &&
-      Number.isSafeInteger(product.id) && product.id > 0 &&
+      Number.isSafeInteger(product.id) &&
+      product.id > 0 &&
       typeof product.name === 'string' &&
       typeof product.brand === 'string' &&
       typeof product.image === 'string' &&
       typeof product.imageAlt === 'string' &&
-      Number.isFinite(product.priceTHB) && product.priceTHB >= 0 &&
-      Number.isSafeInteger(product.stockQuantity) && product.stockQuantity > 0 &&
-      Number.isSafeInteger(quantity) && quantity > 0 && quantity <= product.stockQuantity,
+      Number.isFinite(product.priceTHB) &&
+      product.priceTHB >= 0 &&
+      Number.isSafeInteger(product.stockQuantity) &&
+      product.stockQuantity > 0 &&
+      Number.isSafeInteger(quantity) &&
+      quantity > 0 &&
+      quantity <= product.stockQuantity
     );
   });
 }
@@ -76,15 +82,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (hydrated) window.localStorage.setItem(storageKey, JSON.stringify(items));
   }, [hydrated, items]);
 
-  const value = useMemo<CartContextValue>(() => ({
-    items,
-    addItem: (product) => setItems((current) => addItem(current, product)),
-    updateQuantity: (productId, quantity) => setItems((current) => updateQuantity(current, productId, quantity)),
-    removeItem: (productId) => setItems((current) => removeItem(current, productId)),
-    clearCart: () => setItems([]),
-    itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
-    subtotalTHB: items.reduce((sum, item) => sum + item.product.priceTHB * item.quantity, 0),
-  }), [items]);
+  const value = useMemo<CartContextValue>(
+    () => ({
+      items,
+      addItem: (product) => setItems((current) => addItem(current, product)),
+      updateQuantity: (productId, quantity) =>
+        setItems((current) => updateQuantity(current, productId, quantity)),
+      removeItem: (productId) => setItems((current) => removeItem(current, productId)),
+      clearCart: () => setItems([]),
+      itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
+      subtotalTHB: items.reduce((sum, item) => sum + item.product.priceTHB * item.quantity, 0),
+    }),
+    [items]
+  );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
