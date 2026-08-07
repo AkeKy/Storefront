@@ -5,7 +5,20 @@ import type { CartItem } from '@/features/cart/CartContext';
 const items = [{ quantity: 2, product: { id: 7 } }] as unknown as CartItem[];
 
 describe('createOrder', () => {
-  afterEach(() => vi.unstubAllEnvs());
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it('returns a demo order without requesting the backend when configuration is absent', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_URL', '');
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(createOrder(items)).resolves.toEqual({ mode: 'demo' });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 
   it('posts the exact backend order payload when configured', async () => {
     vi.stubEnv('NEXT_PUBLIC_API_URL', 'https://api.example.test/');
