@@ -45,7 +45,7 @@ export default function CheckoutContent() {
   const [result, setResult] = useState<OrderSubmissionResult>();
   const shippingTHB = subtotalTHB === 0 || subtotalTHB >= 1500 ? 0 : 80;
   const totalTHB = subtotalTHB + shippingTHB;
-  const hasValidationError = Object.keys(errors).length > 0;
+  const hasValidationError = Object.values(errors).some(Boolean);
 
   const updateField = (key: keyof DeliveryForm, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
