@@ -1,23 +1,38 @@
-import React from 'react';
-import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import HeroSection from '@/app/components/HeroSection';
-import FeaturedProducts from '@/app/components/FeaturedProducts';
-import StatsSection from '@/app/components/StatsSection';
+import Header from '@/components/Header';
 import CategoryShowcase from '@/app/components/CategoryShowcase';
-import TestimonialsSection from '@/app/components/TestimonialsSection';
-import CTABanner from '@/app/components/CTABanner';
+import { HomeCatalog } from '@/app/components/HomeCatalog';
+import HeroSection from '@/app/components/HeroSection';
+
+function DeliveryAndReturns() {
+  return (
+    <section className="px-6 py-16" aria-labelledby="delivery-heading">
+      <div className="surface-card mx-auto grid max-w-screen-xl gap-8 p-6 sm:grid-cols-2 sm:p-8">
+        <div>
+          <h2 id="delivery-heading" className="text-xl font-bold text-card-foreground">Delivery</h2>
+          <p className="mt-2 leading-7 text-muted-foreground">
+            Delivery options and charges are shown during checkout after you provide a delivery address.
+          </p>
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-card-foreground">Returns</h2>
+          <p className="mt-2 leading-7 text-muted-foreground">
+            If an item arrives with a problem, contact ByteForge with your order details so we can review the next steps.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function HomePage() {
   return (
-    <main className="bg-background min-h-screen dot-pattern-dark">
+    <main className="min-h-screen bg-background">
       <Header cartCount={3} />
       <HeroSection />
-      <FeaturedProducts />
-      <StatsSection />
       <CategoryShowcase />
-      <TestimonialsSection />
-      <CTABanner />
+      <HomeCatalog />
+      <DeliveryAndReturns />
       <Footer />
     </main>
   );
