@@ -2,7 +2,7 @@ import type { Product } from '@/features/catalog/types';
 
 type ProductCardProps = {
   product: Product;
-  onAddToCart: (product: Product) => void;
+  onAddToCart?: (product: Product) => void;
 };
 
 const priceFormatter = new Intl.NumberFormat('th-TH', {
@@ -39,15 +39,17 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             {isInStock ? 'In stock' : 'Out of stock'}
           </span>
         </div>
-        <button
-          className="btn-primary mt-5 w-full justify-center disabled:cursor-not-allowed disabled:opacity-50"
-          type="button"
-          disabled={!isInStock}
-          aria-label={isInStock ? `Add ${product.name} to cart` : 'Out of stock'}
-          onClick={() => onAddToCart(product)}
-        >
-          {isInStock ? 'Add to cart' : 'Out of stock'}
-        </button>
+        {onAddToCart && (
+          <button
+            className="btn-primary mt-5 w-full justify-center disabled:cursor-not-allowed disabled:opacity-50"
+            type="button"
+            disabled={!isInStock}
+            aria-label={isInStock ? `Add ${product.name} to cart` : 'Out of stock'}
+            onClick={() => onAddToCart(product)}
+          >
+            {isInStock ? 'Add to cart' : 'Out of stock'}
+          </button>
+        )}
       </div>
     </article>
   );

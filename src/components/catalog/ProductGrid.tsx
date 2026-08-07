@@ -7,7 +7,7 @@ type ProductGridProps = {
   isLoading: boolean;
   error?: string;
   onRetry?: () => void;
-  onAddToCart: (product: Product) => void;
+  onAddToCart?: (product: Product) => void;
 };
 
 export function ProductGrid({ products, isLoading, error, onRetry, onAddToCart }: ProductGridProps) {
