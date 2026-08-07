@@ -19,15 +19,15 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-  applicationName: 'ByteForge',
-  title: 'ByteForge — Gaming Gear & IT Tech Shop',
+  applicationName: 'Gadget Arena',
+  title: 'Gadget Arena — Gaming Gear & IT Tech Shop',
   description:
-    'ByteForge is a practical destination for gaming peripherals, GPUs, monitors, headsets, and IT gear.',
+    'Gadget Arena is a practical destination for gaming peripherals, GPUs, monitors, headsets, and IT gear.',
   icons: {
     icon: [{ url: '/assets/favicon.ico', type: 'image/x-icon' }],
   },
   openGraph: {
-    title: 'ByteForge — Gaming Gear',
+    title: 'Gadget Arena — Gaming Gear',
     description: 'Shop gaming peripherals, GPUs, and IT gear.',
     images: [{ url: '/assets/images/app_logo.png', width: 1200, height: 630 }],
   },
@@ -39,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${dmSans.variable} light`}>
+    <html lang="en" className={dmSans.variable}>
       <body className={dmSans.className}>
         <ThemeProvider>
           <CartProvider>{children}</CartProvider>

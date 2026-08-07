@@ -5,6 +5,9 @@ describe('catalogService.listProducts', () => {
   it('matches the query against a product name and brand', async () => {
     const result = await catalogService.listProducts({ query: 'Keychron' });
     expect(result.products.map((product) => product.name)).toContain('Keychron Q6 Max');
+    expect(result.products[0].image).toBe(
+      'https://images.unsplash.com/photo-1725755751265-6a7b23077316'
+    );
   });
 
   it('returns an explicit empty result for an unavailable category', async () => {

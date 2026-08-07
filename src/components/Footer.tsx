@@ -9,7 +9,7 @@ const Footer: React.FC = () => (
         <Link href="/" className="flex items-center gap-2">
           <AppLogo size={28} />
           <span className="hidden text-sm font-black uppercase tracking-tighter text-foreground sm:block">
-            Byte<span className="text-primary">Forge</span>
+            Gadget<span className="text-primary">Arena</span>
           </span>
         </Link>
         <nav
@@ -27,7 +27,7 @@ const Footer: React.FC = () => (
           </Link>
         </nav>
       </div>
-      <span className="text-xs text-muted-foreground">© 2026 ByteForge</span>
+      <span className="text-xs text-muted-foreground">© 2026 GadgetArena</span>
     </div>
   </footer>
 );
