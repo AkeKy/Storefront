@@ -99,19 +99,19 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
 
   return (
     <section className="dot-pattern-dark bg-background pb-16 pt-32 sm:pt-36">
-      <div className="mx-auto max-w-screen-xl px-6">
-        <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <span className="tag-neon mb-3 inline-block">Gadget Arena catalog</span>
-            <h1 className="text-display-md text-foreground">
-              BUILD YOUR <span className="gradient-text-primary">SETUP</span>
-            </h1>
-          </div>
-          <p className="text-sm text-muted-foreground">Prices shown in Thai baht</p>
-        </div>
+      <div className="mx-auto max-w-screen-2xl px-6">
+        <header className="mb-8">
+          <span className="tag-neon mb-3 inline-block">Full catalog</span>
+          <h1 className="text-display-md text-foreground">
+            ALL <span className="gradient-text-primary">GEAR</span>
+          </h1>
+          <p className="mt-3 text-sm text-muted-foreground" aria-live="polite">
+            {isLoading ? 'Loading products' : `${products.length} products found`}
+          </p>
+        </header>
 
-        <div className="filter-sidebar mb-8 grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-5">
-          <div className="lg:col-span-2">
+        <div className="mb-6 grid gap-3 lg:grid-cols-[minmax(0,1fr)_13rem]">
+          <div>
             <label
               className="mb-2 block text-sm font-semibold text-foreground"
               htmlFor="product-search"
@@ -126,48 +126,6 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search products or brands"
             />
-          </div>
-          <div>
-            <label
-              className="mb-2 block text-sm font-semibold text-foreground"
-              htmlFor="product-category"
-            >
-              Category
-            </label>
-            <select
-              id="product-category"
-              className={selectClassName}
-              value={categoryId}
-              onChange={(event) => setCategoryId(event.target.value)}
-            >
-              <option value="">All categories</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label
-              className="mb-2 block text-sm font-semibold text-foreground"
-              htmlFor="product-brand"
-            >
-              Brand
-            </label>
-            <select
-              id="product-brand"
-              className={selectClassName}
-              value={brand}
-              onChange={(event) => setBrand(event.target.value)}
-            >
-              <option value="">All brands</option>
-              {brands.map((productBrand) => (
-                <option key={productBrand} value={productBrand}>
-                  {productBrand}
-                </option>
-              ))}
-            </select>
           </div>
           <div>
             <label
@@ -191,37 +149,83 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
               ))}
             </select>
           </div>
-          <div className="flex items-end gap-4 sm:col-span-2 lg:col-span-5">
-            <label
-              className="flex cursor-pointer items-center gap-2 text-sm font-medium text-foreground"
-              htmlFor="in-stock-only"
-            >
-              <input
-                id="in-stock-only"
-                className="h-4 w-4 accent-primary"
-                type="checkbox"
-                checked={inStockOnly}
-                onChange={(event) => setInStockOnly(event.target.checked)}
-              />
-              In stock only
-            </label>
-            <button
-              className="ml-auto text-sm font-semibold text-primary hover:underline"
-              type="button"
-              onClick={resetFilters}
-            >
-              Reset filters
-            </button>
-          </div>
         </div>
 
-        <ProductGrid
-          products={products}
-          isLoading={isLoading}
-          error={error}
-          onRetry={() => setRetryCount((count) => count + 1)}
-          onAddToCart={addItem}
-        />
+        <div className="catalog-layout">
+          <aside className="filter-sidebar h-fit p-5 lg:sticky lg:top-28" aria-labelledby="catalog-filters-heading">
+            <div className="mb-6 flex items-center justify-between gap-3">
+              <h2 id="catalog-filters-heading" className="text-base font-black uppercase tracking-tight text-foreground">
+                Filters
+              </h2>
+              <button
+                className="text-xs font-bold uppercase tracking-wide text-primary hover:underline"
+                type="button"
+                onClick={resetFilters}
+              >
+                Reset all
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground" htmlFor="product-category">
+                  Category
+                </label>
+                <select
+                  id="product-category"
+                  className={selectClassName}
+                  value={categoryId}
+                  onChange={(event) => setCategoryId(event.target.value)}
+                >
+                  <option value="">All categories</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground" htmlFor="product-brand">
+                  Brand
+                </label>
+                <select
+                  id="product-brand"
+                  className={selectClassName}
+                  value={brand}
+                  onChange={(event) => setBrand(event.target.value)}
+                >
+                  <option value="">All brands</option>
+                  {brands.map((productBrand) => (
+                    <option key={productBrand} value={productBrand}>
+                      {productBrand}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-foreground" htmlFor="in-stock-only">
+                <input
+                  id="in-stock-only"
+                  className="h-4 w-4 accent-primary"
+                  type="checkbox"
+                  checked={inStockOnly}
+                  onChange={(event) => setInStockOnly(event.target.checked)}
+                />
+                In stock only
+              </label>
+            </div>
+          </aside>
+
+          <ProductGrid
+            products={products}
+            isLoading={isLoading}
+            error={error}
+            onRetry={() => setRetryCount((count) => count + 1)}
+            onAddToCart={addItem}
+          />
+        </div>
       </div>
     </section>
   );
