@@ -9,6 +9,7 @@ type CartContextValue = {
   addItem: (product: Product) => void;
   updateQuantity: (productId: number, quantity: number) => void;
   removeItem: (productId: number) => void;
+  clearCart: () => void;
   itemCount: number;
   subtotalTHB: number;
 };
@@ -80,6 +81,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     addItem: (product) => setItems((current) => addItem(current, product)),
     updateQuantity: (productId, quantity) => setItems((current) => updateQuantity(current, productId, quantity)),
     removeItem: (productId) => setItems((current) => removeItem(current, productId)),
+    clearCart: () => setItems([]),
     itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
     subtotalTHB: items.reduce((sum, item) => sum + item.product.priceTHB * item.quantity, 0),
   }), [items]);
