@@ -43,7 +43,6 @@ export function HomeCatalog() {
           isLoading={isLoading}
           error={error}
           onRetry={loadProducts}
-          onAddToCart={() => undefined}
         />
       </div>
     </section>
