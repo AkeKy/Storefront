@@ -10,7 +10,7 @@ Turn the existing `shopping-frontend` mock storefront into a credible full-stack
 - Default theme: light base with off-white and pale-gray surfaces, charcoal text, and a restrained electric-lime accent for primary actions, price emphasis, and status.
 - Preserve the current gaming identity, but remove visual effects that make the product feel like a generic mockup: atmospheric blobs, scanlines, persistent neon borders, inflated social proof, and crypto payment messaging.
 - Use practical product copy, Thai baht pricing, consistent product imagery, and realistic stock and order states.
-- Dark mode is out of scope for the first delivery.
+- Light mode is the default. Keep a fully functional dark-mode preference for shoppers who choose it.
 
 ## First-delivery pages
 
@@ -55,4 +55,3 @@ The current Go backend exposes authentication, category, order, member, and admi
 - Payment-gateway integration.
 - Reviews and ratings.
 - Admin dashboard.
-- Dark mode.

@@ -14,7 +14,7 @@
 - Keep product copy and interface labels practical; remove scanlines, floating blobs, unverified customer counts, testimonials, crypto payment, and US-centric pricing.
 - Show Thai baht prices and only make claims the app can support.
 - Keep product access behind a typed adapter until the Go backend has product-list and product-detail endpoints.
-- Do not add payment-gateway integration, reviews, an admin dashboard, or dark-mode UI work.
+- Do not add payment-gateway integration, reviews, or an admin dashboard. Keep a fully functional user-controlled dark mode while light remains the default.
 - Every form control needs a visible keyboard focus style and validation feedback.
 
 ---
