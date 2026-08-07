@@ -49,7 +49,7 @@ const Header: React.FC<HeaderProps> = ({ cartCount = 0 }) => {
         <Link href="/" className="flex items-center gap-2.5 group">
           <AppLogo size={36} />
           <span className="font-black text-xl tracking-tighter text-foreground uppercase hidden sm:block">
-            Gadget<span className="text-primary">Arena</span>
+            Byte<span className="text-primary">Forge</span>
           </span>
         </Link>
 
@@ -132,7 +132,7 @@ const Header: React.FC<HeaderProps> = ({ cartCount = 0 }) => {
             >
               <AppLogo size={32} />
               <span className="font-black text-lg tracking-tighter uppercase">
-                Gadget<span className="text-primary">Arena</span>
+                Byte<span className="text-primary">Forge</span>
               </span>
             </Link>
             <button

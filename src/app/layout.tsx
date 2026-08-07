@@ -18,15 +18,14 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-  title: 'GadgetArena — Gaming Gear & IT Tech Shop',
-  description:
-    'GadgetArena is the ultimate destination for gamers and tech enthusiasts — shop top gaming peripherals, GPUs, monitors, headsets, and IT gear with fast US shipping.',
+  title: 'ByteForge — Gaming Gear & IT Tech Shop',
+  description: 'ByteForge is a practical destination for gaming peripherals, GPUs, monitors, headsets, and IT gear.',
   icons: {
     icon: [{ url: '/favicon.ico', type: 'image/x-icon' }],
   },
   openGraph: {
-    title: 'GadgetArena — Gaming Gear',
-    description: 'Shop top gaming peripherals, GPUs, and IT gear.',
+    title: 'ByteForge — Gaming Gear',
+    description: 'Shop gaming peripherals, GPUs, and IT gear.',
     images: [{ url: '/assets/images/app_logo.png', width: 1200, height: 630 }],
   },
 };
@@ -37,16 +36,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={dmSans.variable}>
+    <html lang="en" className={`${dmSans.variable} light`}>
       <body className={dmSans.className}>
         <ThemeProvider>{children}</ThemeProvider>
-
-        <script
-          type="module"
-          async
-          src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fgadgetaren6716back.builtwithrocket.new&_be=https%3A%2F%2Fappanalytics.rocket.new&_v=0.1.20"
-        />
-        <script type="module" defer src="https://static.rocket.new/rocket-shot.js?v=0.0.2" />
       </body>
     </html>
   );
