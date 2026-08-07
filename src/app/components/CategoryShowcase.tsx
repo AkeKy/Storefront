@@ -70,7 +70,9 @@ export default function CategoryShowcase() {
                 <p className="mb-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
                   {category.subtitle}
                 </p>
-                <h3 className="text-xl font-black leading-tight text-foreground">{category.name}</h3>
+                <h3 className="text-xl font-black leading-tight text-foreground">
+                  {category.name}
+                </h3>
               </div>
               <div className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-transparent transition-all duration-300 group-hover:border-primary/40 group-hover:bg-primary/20">
                 <Icon

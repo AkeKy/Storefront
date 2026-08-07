@@ -20,8 +20,8 @@ function DeliveryAndReturns() {
         <div>
           <h2 className="text-xl font-bold text-card-foreground">Returns</h2>
           <p className="mt-2 leading-7 text-muted-foreground">
-            If an item arrives with a problem, contact Gadget Arena with your order details so we can
-            review the next steps.
+            If an item arrives with a problem, contact Gadget Arena with your order details so we
+            can review the next steps.
           </p>
         </div>
       </div>

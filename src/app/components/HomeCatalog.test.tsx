@@ -51,7 +51,7 @@ describe('HomeCatalog', () => {
       </CartProvider>
     );
 
-    expect(await screen.findByRole('heading', { name: /selected gear/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /top picks/i })).toBeInTheDocument();
     expect(screen.queryByText(/12,000|happy gamers|real gamers/i)).not.toBeInTheDocument();
 
     const addToCart = screen.getByRole('button', { name: /add keychron q6 max to cart/i });

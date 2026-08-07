@@ -152,9 +152,15 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
         </div>
 
         <div className="catalog-layout">
-          <aside className="filter-sidebar h-fit p-5 lg:sticky lg:top-28" aria-labelledby="catalog-filters-heading">
+          <aside
+            className="filter-sidebar h-fit p-5 lg:sticky lg:top-28"
+            aria-labelledby="catalog-filters-heading"
+          >
             <div className="mb-6 flex items-center justify-between gap-3">
-              <h2 id="catalog-filters-heading" className="text-base font-black uppercase tracking-tight text-foreground">
+              <h2
+                id="catalog-filters-heading"
+                className="text-base font-black uppercase tracking-tight text-foreground"
+              >
                 Filters
               </h2>
               <button
@@ -168,7 +174,10 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
 
             <div className="space-y-5">
               <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground" htmlFor="product-category">
+                <label
+                  className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground"
+                  htmlFor="product-category"
+                >
                   Category
                 </label>
                 <select
@@ -187,7 +196,10 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
               </div>
 
               <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground" htmlFor="product-brand">
+                <label
+                  className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground"
+                  htmlFor="product-brand"
+                >
                   Brand
                 </label>
                 <select
@@ -205,7 +217,10 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
                 </select>
               </div>
 
-              <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-foreground" htmlFor="in-stock-only">
+              <label
+                className="flex cursor-pointer items-center gap-2 text-sm font-medium text-foreground"
+                htmlFor="in-stock-only"
+              >
                 <input
                   id="in-stock-only"
                   className="h-4 w-4 accent-primary"
