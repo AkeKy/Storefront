@@ -34,12 +34,29 @@ export function removeItem(items: CartItem[], productId: number): CartItem[] {
   return items.filter((item) => item.product.id !== productId);
 }
 
+export function sanitizeStoredItems(value: unknown): CartItem[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is CartItem => {
+    if (!item || typeof item !== 'object' || !('product' in item) || !('quantity' in item)) return false;
+    const { product, quantity } = item as CartItem;
+    return Boolean(
+      product &&
+      Number.isSafeInteger(product.id) && product.id > 0 &&
+      typeof product.name === 'string' &&
+      typeof product.brand === 'string' &&
+      typeof product.image === 'string' &&
+      typeof product.imageAlt === 'string' &&
+      Number.isFinite(product.priceTHB) && product.priceTHB >= 0 &&
+      Number.isSafeInteger(product.stockQuantity) && product.stockQuantity > 0 &&
+      Number.isSafeInteger(quantity) && quantity > 0 && quantity <= product.stockQuantity,
+    );
+  });
+}
+
 function readStoredItems(): CartItem[] {
   try {
     const value: unknown = JSON.parse(window.localStorage.getItem(storageKey) ?? '[]');
-    return Array.isArray(value)
-      ? value.filter((item): item is CartItem => Boolean(item && typeof item === 'object' && 'product' in item && 'quantity' in item))
-      : [];
+    return sanitizeStoredItems(value);
   } catch {
     return [];
   }
