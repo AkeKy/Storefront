@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { CartProvider } from '@/features/cart/CartContext';
 import ProductsContent from './ProductsContent';
 
 const products = [
@@ -53,7 +54,7 @@ describe('ProductsContent', () => {
   it('filters products when a customer searches by brand', async () => {
     const user = userEvent.setup();
 
-    render(<ProductsContent initialCategoryId={undefined} />);
+    render(<CartProvider><ProductsContent initialCategoryId={undefined} /></CartProvider>);
 
     await screen.findByText('Razer DeathAdder V3');
     await user.type(screen.getByRole('searchbox', { name: /search products/i }), 'Keychron');
@@ -67,7 +68,7 @@ describe('ProductsContent', () => {
   it('keeps brand options available after a search has no matches', async () => {
     const user = userEvent.setup();
 
-    render(<ProductsContent initialCategoryId={undefined} />);
+    render(<CartProvider><ProductsContent initialCategoryId={undefined} /></CartProvider>);
 
     await screen.findByText('Razer DeathAdder V3');
     await user.type(screen.getByRole('searchbox', { name: /search products/i }), 'not-a-product');
