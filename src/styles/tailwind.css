@@ -60,7 +60,7 @@ html:not(.light) {
   .grid-12 { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; }
   .section-reveal, .reveal-hero, .reveal-hero-img { opacity: 1; }
   .tag-neon, .tag-cyan { display: inline-block; border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border)); border-radius: 9999px; padding: 0.25rem 0.75rem; background: var(--accent); color: var(--foreground); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
-  .nav-scrolled { background: rgba(247, 248, 245, 0.96) !important; border-bottom: 1px solid var(--border); }
+  .nav-scrolled { background: var(--background) !important; border-bottom: 1px solid var(--border); }
   .mobile-menu-overlay { background: var(--background); }
   .filter-sidebar { background-color: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
   .range-slider { width: 100%; height: 3px; appearance: none; border-radius: 9999px; background: var(--border); }
