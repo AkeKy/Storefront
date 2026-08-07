@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { CartProvider } from '@/features/cart/CartContext';
@@ -51,6 +51,21 @@ vi.mock('@/features/catalog/catalog-service', () => ({
 }));
 
 describe('ProductsContent', () => {
+  it('groups catalogue filters in an accessible sidebar', async () => {
+    render(
+      <CartProvider>
+        <ProductsContent initialCategoryId={undefined} />
+      </CartProvider>
+    );
+
+    const filters = await screen.findByRole('complementary', { name: /filters/i });
+
+    expect(screen.getByRole('searchbox', { name: /search products/i })).toBeInTheDocument();
+    expect(within(filters).getByRole('combobox', { name: /category/i })).toBeInTheDocument();
+    expect(within(filters).getByRole('combobox', { name: /brand/i })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /sort by/i })).toBeInTheDocument();
+  });
+
   it('filters products when a customer searches by brand', async () => {
     const user = userEvent.setup();
 
