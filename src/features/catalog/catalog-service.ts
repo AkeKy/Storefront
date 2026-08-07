@@ -24,14 +24,16 @@ export const catalogService: CatalogService = {
     const products = sortProducts(
       catalogProducts.filter((product) => {
         const matchesQuery =
-          !query || normalize(product.name).includes(query) || normalize(product.brand).includes(query);
+          !query ||
+          normalize(product.name).includes(query) ||
+          normalize(product.brand).includes(query);
         const matchesCategory = !categoryId || normalize(product.categoryId) === categoryId;
         const matchesBrand = !brand || normalize(product.brand) === brand;
         const matchesStock = !filter.inStockOnly || product.stockQuantity > 0;
 
         return matchesQuery && matchesCategory && matchesBrand && matchesStock;
       }),
-      filter.sort,
+      filter.sort
     );
 
     return { products, total: products.length };

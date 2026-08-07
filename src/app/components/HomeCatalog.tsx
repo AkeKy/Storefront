@@ -35,10 +35,15 @@ export function HomeCatalog() {
       <div className="mx-auto max-w-screen-xl">
         <div className="mb-8 max-w-2xl">
           <p className="text-sm font-semibold text-primary">Catalog highlights</p>
-          <h2 id="selected-gear-heading" className="mt-2 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+          <h2
+            id="selected-gear-heading"
+            className="mt-2 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+          >
             Selected gear
           </h2>
-          <p className="mt-3 text-muted-foreground">A practical starting point from the current ByteForge catalog.</p>
+          <p className="mt-3 text-muted-foreground">
+            A practical starting point from the current ByteForge catalog.
+          </p>
         </div>
         <ProductGrid
           products={products}

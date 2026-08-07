@@ -31,7 +31,7 @@ vi.mock('next/image', async () => {
       onLoadingComplete: _onLoadingComplete,
       ...imageProps
     },
-    ref,
+    ref
   ) {
     return createElement('img', {
       ...imageProps,

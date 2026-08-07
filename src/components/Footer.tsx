@@ -12,10 +12,19 @@ const Footer: React.FC = () => (
             Byte<span className="text-primary">Forge</span>
           </span>
         </Link>
-        <nav aria-label="Footer navigation" className="flex items-center gap-6 text-sm font-medium text-muted-foreground">
-          <Link href="/" className="transition-colors hover:text-foreground">Home</Link>
-          <Link href="/products" className="transition-colors hover:text-foreground">Products</Link>
-          <Link href="/checkout" className="transition-colors hover:text-foreground">Checkout</Link>
+        <nav
+          aria-label="Footer navigation"
+          className="flex items-center gap-6 text-sm font-medium text-muted-foreground"
+        >
+          <Link href="/" className="transition-colors hover:text-foreground">
+            Home
+          </Link>
+          <Link href="/products" className="transition-colors hover:text-foreground">
+            Products
+          </Link>
+          <Link href="/checkout" className="transition-colors hover:text-foreground">
+            Checkout
+          </Link>
         </nav>
       </div>
       <span className="text-xs text-muted-foreground">© 2026 ByteForge</span>

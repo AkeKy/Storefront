@@ -10,7 +10,13 @@ type ProductGridProps = {
   onAddToCart?: (product: Product) => void;
 };
 
-export function ProductGrid({ products, isLoading, error, onRetry, onAddToCart }: ProductGridProps) {
+export function ProductGrid({
+  products,
+  isLoading,
+  error,
+  onRetry,
+  onAddToCart,
+}: ProductGridProps) {
   if (isLoading) {
     return <StatusMessage state="loading" />;
   }
@@ -24,7 +30,10 @@ export function ProductGrid({ products, isLoading, error, onRetry, onAddToCart }
   }
 
   return (
-    <section aria-label="Products" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <section
+      aria-label="Products"
+      className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+    >
       {products.map((product) => (
         <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
       ))}

@@ -31,7 +31,7 @@ describe('catalogService.listProducts', () => {
       expect.arrayContaining([
         expect.objectContaining({ id: 'keyboards', name: 'Keyboards' }),
         expect.objectContaining({ id: 'mice', name: 'Mice' }),
-      ]),
+      ])
     );
   });
 });

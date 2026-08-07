@@ -29,7 +29,11 @@ vi.mock('@/features/catalog/catalog-service', () => ({
 function CartItemCount() {
   const { itemCount } = useCart();
 
-  return <output aria-label="Cart item count" aria-live="polite">{itemCount}</output>;
+  return (
+    <output aria-label="Cart item count" aria-live="polite">
+      {itemCount}
+    </output>
+  );
 }
 
 describe('HomeCatalog', () => {
@@ -44,7 +48,7 @@ describe('HomeCatalog', () => {
       <CartProvider>
         <HomeCatalog />
         <CartItemCount />
-      </CartProvider>,
+      </CartProvider>
     );
 
     expect(await screen.findByRole('heading', { name: /selected gear/i })).toBeInTheDocument();
