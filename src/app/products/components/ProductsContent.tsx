@@ -98,21 +98,19 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
   };
 
   return (
-    <section className="bg-background py-10 sm:py-14">
-      <div className="container">
+    <section className="dot-pattern-dark bg-background pb-16 pt-32 sm:pt-36">
+      <div className="mx-auto max-w-screen-xl px-6">
         <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.16em] text-primary">
-              ByteForge catalogue
-            </p>
-            <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-              Build your setup
+            <span className="tag-neon mb-3 inline-block">Gadget Arena catalog</span>
+            <h1 className="text-display-md text-foreground">
+              BUILD YOUR <span className="gradient-text-primary">SETUP</span>
             </h1>
           </div>
           <p className="text-sm text-muted-foreground">Prices shown in Thai baht</p>
         </div>
 
-        <div className="surface-card mb-8 grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="filter-sidebar mb-8 grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
             <label
               className="mb-2 block text-sm font-semibold text-foreground"

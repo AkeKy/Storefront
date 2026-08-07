@@ -31,18 +31,15 @@ export function HomeCatalog() {
   }, []);
 
   return (
-    <section className="px-6 py-16" aria-labelledby="selected-gear-heading">
+    <section id="featured-gear" className="px-6 py-20" aria-labelledby="selected-gear-heading">
       <div className="mx-auto max-w-screen-xl">
         <div className="mb-8 max-w-2xl">
-          <p className="text-sm font-semibold text-primary">Catalog highlights</p>
-          <h2
-            id="selected-gear-heading"
-            className="mt-2 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
-          >
-            Selected gear
+          <span className="tag-neon mb-3 inline-block">Featured gear</span>
+          <h2 id="selected-gear-heading" className="text-display-md text-foreground">
+            TOP <span className="gradient-text-primary">PICKS</span>
           </h2>
           <p className="mt-3 text-muted-foreground">
-            A practical starting point from the current ByteForge catalog.
+            A practical starting point from the current Gadget Arena catalog.
           </p>
         </div>
         <ProductGrid
