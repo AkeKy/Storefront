@@ -1,4 +1,4 @@
-# Next.js
+# Shopping Frontend
 
 A modern Next.js 15 application built with TypeScript and Tailwind CSS.
 
@@ -28,7 +28,7 @@ A modern Next.js 15 application built with TypeScript and Tailwind CSS.
 ## 📁 Project Structure
 
 ```
-nextjs/
+shopping-frontend/
 ├── public/             # Static assets
 ├── src/
 │   ├── app/            # App router components
@@ -84,8 +84,5 @@ You can check out the [Next.js GitHub repository](https://github.com/vercel/next
 
 ## 🙏 Acknowledgments
 
-- Built with [Rocket.new](https://rocket.new)
 - Powered by Next.js and React
-- Styled with Tailwind CSS
-
-Built with ❤️ on Rocket.new
+- Styled with Tailwind CSS
