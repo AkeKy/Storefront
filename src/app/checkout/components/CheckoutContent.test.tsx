@@ -30,6 +30,25 @@ it('blocks review until required delivery details are entered', async () => {
   expect(await screen.findByText(/enter your name and delivery address/i)).toBeInTheDocument();
 });
 
+it('clears the validation alert after every invalid field is corrected', async () => {
+  const user = userEvent.setup();
+  render(<CartProvider><CheckoutContent /></CartProvider>);
+
+  await user.click(screen.getByRole('button', { name: /review order/i }));
+  expect(await screen.findByText(/enter your name and delivery address/i)).toBeInTheDocument();
+
+  await user.type(screen.getByLabelText(/email address/i), 'ake@example.com');
+  await user.type(screen.getByLabelText(/first name/i), 'Ake');
+  await user.type(screen.getByLabelText(/last name/i), 'Ky');
+  await user.type(screen.getByLabelText(/street address/i), '99 Sukhumvit Road');
+  await user.type(screen.getByLabelText(/city \/ district/i), 'Watthana');
+  await user.type(screen.getByLabelText(/province/i), 'Bangkok');
+  await user.type(screen.getByLabelText(/postal code/i), '10110');
+  await user.type(screen.getByLabelText(/phone number/i), '0812345678');
+
+  expect(screen.queryByText(/enter your name and delivery address/i)).not.toBeInTheDocument();
+});
+
 it('rejects malformed email, Thai phone, and postal code before review', () => {
   expect(validateDeliveryForm({
     email: 'not-an-email',
@@ -80,4 +99,26 @@ it('clears the cart after a configured API order succeeds', async () => {
 
   expect(await screen.findByText(/your cart has been cleared/i)).toBeInTheDocument();
   await waitFor(() => expect(JSON.parse(window.localStorage.getItem('byteforge-cart') ?? 'null')).toEqual([]));
+});
+
+it('keeps a stored cart after a demo checkout preview', async () => {
+  window.localStorage.setItem('byteforge-cart', JSON.stringify([{ product, quantity: 1 }]));
+  createOrderMock.mockResolvedValue({ mode: 'demo' });
+  const user = userEvent.setup();
+  render(<CartProvider><CheckoutContent /></CartProvider>);
+
+  await screen.findByText(product.name);
+  await user.type(screen.getByLabelText(/email address/i), 'ake@example.com');
+  await user.type(screen.getByLabelText(/first name/i), 'Ake');
+  await user.type(screen.getByLabelText(/last name/i), 'Ky');
+  await user.type(screen.getByLabelText(/street address/i), '99 Sukhumvit Road');
+  await user.type(screen.getByLabelText(/city \/ district/i), 'Watthana');
+  await user.type(screen.getByLabelText(/province/i), 'Bangkok');
+  await user.type(screen.getByLabelText(/postal code/i), '10110');
+  await user.type(screen.getByLabelText(/phone number/i), '0812345678');
+  await user.click(screen.getByRole('button', { name: /review order/i }));
+  await user.click(await screen.findByRole('button', { name: /submit order/i }));
+
+  expect(await screen.findByText(/your cart is unchanged/i)).toBeInTheDocument();
+  await waitFor(() => expect(JSON.parse(window.localStorage.getItem('byteforge-cart') ?? 'null')).toEqual([{ product, quantity: 1 }]));
 });
