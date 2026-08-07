@@ -10,21 +10,21 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: 'light',
+  theme: 'dark',
   toggleTheme: () => {},
 });
 
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
     document.documentElement.classList.toggle('light', theme === 'light');
   }, [theme]);
 
   useEffect(() => {
-    if (localStorage.getItem('byteforge-theme') === 'dark') setTheme('dark');
+    if (localStorage.getItem('byteforge-theme') === 'light') setTheme('light');
   }, []);
 
   const toggleTheme = () => {

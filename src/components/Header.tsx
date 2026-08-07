@@ -47,7 +47,7 @@ const Header: React.FC = () => {
         <Link href="/" className="flex items-center gap-2.5 group">
           <AppLogo size={36} />
           <span className="font-black text-xl tracking-tighter text-foreground uppercase hidden sm:block">
-            Byte<span className="text-primary">Forge</span>
+            Gadget<span className="text-primary">Arena</span>
           </span>
         </Link>
 
@@ -130,7 +130,7 @@ const Header: React.FC = () => {
             >
               <AppLogo size={32} />
               <span className="font-black text-lg tracking-tighter uppercase">
-                Byte<span className="text-primary">Forge</span>
+                Gadget<span className="text-primary">Arena</span>
               </span>
             </Link>
             <button
