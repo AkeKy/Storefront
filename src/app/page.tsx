@@ -11,7 +11,7 @@ function DeliveryAndReturns() {
         <div>
           <h2 id="delivery-heading" className="text-xl font-bold text-card-foreground">Delivery</h2>
           <p className="mt-2 leading-7 text-muted-foreground">
-            Delivery options and charges are shown during checkout after you provide a delivery address.
+            Delivery quotes are unavailable in this demo. Checkout shows the item subtotal only, and no payment is collected.
           </p>
         </div>
         <div>
