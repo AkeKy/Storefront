@@ -1,4 +1,5 @@
 import type { Product } from '@/features/catalog/types';
+import AppImage from '@/components/ui/AppImage';
 
 type ProductCardProps = {
   product: Product;
@@ -17,10 +18,12 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   return (
     <article className="surface-card group flex h-full flex-col overflow-hidden">
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-        <img
+        <AppImage
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           src={product.image}
           alt={product.imageAlt}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
         {product.badge && (
           <span className="absolute left-3 top-3 rounded-full bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wide text-accent-foreground">

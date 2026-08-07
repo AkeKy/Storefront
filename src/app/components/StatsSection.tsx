@@ -17,7 +17,7 @@ const StatsSection: React.FC = () => {
           <div className="card-dark p-8 md:row-span-2 flex flex-col justify-between section-reveal-el min-h-[240px] relative overflow-hidden">
             <div className="absolute top-0 right-0 w-48 h-48 blob-primary opacity-30 pointer-events-none" />
             <div>
-              <span className="tag-neon mb-4 inline-block">GadgetArena</span>
+              <span className="tag-neon mb-4 inline-block">ByteForge</span>
               <p className="text-6xl font-black text-primary leading-none mb-2">12K+</p>
               <p className="text-xl font-bold text-foreground mb-2">Happy Gamers</p>
               <p className="text-muted-foreground text-sm leading-relaxed">

@@ -5,8 +5,8 @@
 :root {
   --background: #f7f8f5;
   --foreground: #20231f;
-  --primary: #65a30d;
-  --primary-foreground: #172006;
+  --primary: #4d7c0f;
+  --primary-foreground: #ffffff;
   --secondary: #eef0eb;
   --secondary-foreground: #20231f;
   --accent: #d9f99d;
@@ -17,7 +17,7 @@
   --card-foreground: #20231f;
   --border: #d9ddd4;
   --input: #ffffff;
-  --ring: #65a30d;
+  --ring: #4d7c0f;
   --radius: 0.75rem;
   --font-sans: 'DM Sans', sans-serif;
 }
