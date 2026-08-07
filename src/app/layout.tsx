@@ -19,6 +19,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  applicationName: 'ByteForge',
   title: 'ByteForge — Gaming Gear & IT Tech Shop',
   description: 'ByteForge is a practical destination for gaming peripherals, GPUs, monitors, headsets, and IT gear.',
   icons: {
