@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   title: 'ByteForge — Gaming Gear & IT Tech Shop',
   description: 'ByteForge is a practical destination for gaming peripherals, GPUs, monitors, headsets, and IT gear.',
   icons: {
-    icon: [{ url: '/favicon.ico', type: 'image/x-icon' }],
+    icon: [{ url: '/assets/favicon.ico', type: 'image/x-icon' }],
   },
   openGraph: {
     title: 'ByteForge — Gaming Gear',

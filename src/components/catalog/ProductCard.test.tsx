@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { Product } from '@/features/catalog/types';
@@ -29,5 +29,14 @@ describe('ProductCard', () => {
     await user.click(screen.getByRole('button', { name: 'Add Keychron Q6 Max to cart' }));
 
     expect(onAddToCart).toHaveBeenCalledWith(product);
+  });
+
+  it('replaces a failed product image with the local catalog placeholder', () => {
+    render(<ProductCard product={product} />);
+
+    const image = screen.getByRole('img', { name: product.imageAlt });
+    fireEvent.error(image);
+
+    expect(image).toHaveAttribute('src', expect.stringContaining('/assets/images/no_image.png'));
   });
 });
