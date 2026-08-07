@@ -122,3 +122,45 @@ it('keeps a stored cart after a demo checkout preview', async () => {
   expect(await screen.findByText(/your cart is unchanged/i)).toBeInTheDocument();
   await waitFor(() => expect(JSON.parse(window.localStorage.getItem('byteforge-cart') ?? 'null')).toEqual([{ product, quantity: 1 }]));
 });
+
+it('prevents duplicate submissions while an order request is pending', async () => {
+  window.localStorage.setItem('byteforge-cart', JSON.stringify([{ product, quantity: 1 }]));
+  let resolveOrder: (result: { mode: 'submitted' }) => void;
+  createOrderMock.mockImplementation(() => new Promise((resolve) => { resolveOrder = resolve; }));
+  const user = userEvent.setup();
+  render(<CartProvider><CheckoutContent /></CartProvider>);
+
+  await completeDeliveryDetails(user);
+  const submitOrder = await screen.findByRole('button', { name: /submit order/i });
+  await user.click(submitOrder);
+  await user.click(submitOrder);
+
+  expect(createOrderMock).toHaveBeenCalledTimes(1);
+  expect(submitOrder).toBeDisabled();
+  expect(screen.getByText(/submitting order/i)).toBeInTheDocument();
+
+  resolveOrder!({ mode: 'submitted' });
+  expect(await screen.findByText(/your cart has been cleared/i)).toBeInTheDocument();
+});
+
+it('shows the item subtotal as the checkout total without a delivery quote', async () => {
+  window.localStorage.setItem('byteforge-cart', JSON.stringify([{ product, quantity: 1 }]));
+  render(<CartProvider><CheckoutContent /></CartProvider>);
+
+  await screen.findByText(product.name);
+  expect(screen.getByText(/delivery quote unavailable in demo/i)).toBeInTheDocument();
+  expect(screen.getByText('฿1,990')).toBeInTheDocument();
+  expect(screen.queryByText(/^Delivery$/i)).not.toBeInTheDocument();
+});
+
+async function completeDeliveryDetails(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(screen.getByLabelText(/email address/i), 'ake@example.com');
+  await user.type(screen.getByLabelText(/first name/i), 'Ake');
+  await user.type(screen.getByLabelText(/last name/i), 'Ky');
+  await user.type(screen.getByLabelText(/street address/i), '99 Sukhumvit Road');
+  await user.type(screen.getByLabelText(/city \/ district/i), 'Watthana');
+  await user.type(screen.getByLabelText(/province/i), 'Bangkok');
+  await user.type(screen.getByLabelText(/postal code/i), '10110');
+  await user.type(screen.getByLabelText(/phone number/i), '0812345678');
+  await user.click(screen.getByRole('button', { name: /review order/i }));
+}
