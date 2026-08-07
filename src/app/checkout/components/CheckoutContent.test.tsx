@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CartProvider } from '@/features/cart/CartContext';
 import CheckoutContent, { validateDeliveryForm } from './CheckoutContent';
@@ -149,7 +149,13 @@ it('shows the item subtotal as the checkout total without a delivery quote', asy
 
   await screen.findByText(product.name);
   expect(screen.getByText(/delivery quote unavailable in demo/i)).toBeInTheDocument();
-  expect(screen.getByText('฿1,990')).toBeInTheDocument();
+  const subtotalRow = screen.getByText('Subtotal').closest('p');
+  const totalRow = screen.getByText('Total').closest('p');
+  expect(subtotalRow).not.toBeNull();
+  expect(totalRow).not.toBeNull();
+  const subtotalAmount = within(subtotalRow!).getByText('฿1,990');
+  const totalAmount = within(totalRow!).getByText('฿1,990');
+  expect(totalAmount.textContent).toBe(subtotalAmount.textContent);
   expect(screen.queryByText(/^Delivery$/i)).not.toBeInTheDocument();
 });
 

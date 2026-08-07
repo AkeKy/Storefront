@@ -37,6 +37,8 @@ describe('ProductCard', () => {
     const image = screen.getByRole('img', { name: product.imageAlt });
     fireEvent.error(image);
 
-    expect(image).toHaveAttribute('src', expect.stringContaining('/assets/images/no_image.png'));
+    const renderedSrc = image.getAttribute('src');
+    expect(renderedSrc).not.toBeNull();
+    expect(new URL(renderedSrc!, window.location.origin).searchParams.get('url')).toBe('/assets/images/no_image.png');
   });
 });
