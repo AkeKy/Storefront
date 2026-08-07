@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
-import { CartProvider } from '@/features/cart/CartContext';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { CartProvider, useCart } from '@/features/cart/CartContext';
 import { HomeCatalog } from './HomeCatalog';
 
 vi.mock('@/features/catalog/catalog-service', () => ({
@@ -25,12 +26,35 @@ vi.mock('@/features/catalog/catalog-service', () => ({
   },
 }));
 
+function CartItemCount() {
+  const { itemCount } = useCart();
+
+  return <output aria-label="Cart item count" aria-live="polite">{itemCount}</output>;
+}
+
 describe('HomeCatalog', () => {
-  it('shows a factual product section without fabricated social proof', async () => {
-    render(<CartProvider><HomeCatalog /></CartProvider>);
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  it('shows a factual product section and adds in-stock products to the cart', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CartProvider>
+        <HomeCatalog />
+        <CartItemCount />
+      </CartProvider>,
+    );
 
     expect(await screen.findByRole('heading', { name: /selected gear/i })).toBeInTheDocument();
     expect(screen.queryByText(/12,000|happy gamers|real gamers/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /add .* to cart/i })).not.toBeInTheDocument();
+
+    const addToCart = screen.getByRole('button', { name: /add keychron q6 max to cart/i });
+    expect(addToCart).toBeEnabled();
+
+    await user.click(addToCart);
+
+    expect(screen.getByLabelText('Cart item count')).toHaveTextContent('1');
   });
 });
