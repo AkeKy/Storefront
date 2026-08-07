@@ -28,7 +28,7 @@ function DeliveryAndReturns() {
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-background">
-      <Header cartCount={3} />
+      <Header />
       <HeroSection />
       <CategoryShowcase />
       <HomeCatalog />

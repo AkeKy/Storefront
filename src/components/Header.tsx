@@ -5,15 +5,13 @@ import Link from 'next/link';
 import AppLogo from '@/components/ui/AppLogo';
 import Icon from '@/components/ui/AppIcon';
 import { useTheme } from '@/context/ThemeContext';
+import { useCart } from '@/features/cart/CartContext';
 
-interface HeaderProps {
-  cartCount?: number;
-}
-
-const Header: React.FC<HeaderProps> = ({ cartCount = 0 }) => {
+const Header: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { itemCount } = useCart();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -99,9 +97,9 @@ const Header: React.FC<HeaderProps> = ({ cartCount = 0 }) => {
               size={20}
               className="text-muted-foreground group-hover:text-primary transition-colors"
             />
-            {cartCount > 0 && (
+            {itemCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary text-primary-foreground text-[10px] font-black rounded-full flex items-center justify-center">
-                {cartCount}
+                {itemCount}
               </span>
             )}
           </Link>

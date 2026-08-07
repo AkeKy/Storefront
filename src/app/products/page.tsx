@@ -13,7 +13,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   return (
     <main className="bg-background min-h-screen">
-      <Header cartCount={3} />
+      <Header />
       <ProductsContent initialCategoryId={initialCategoryId} />
       <Footer />
     </main>

@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react';
 import { ProductGrid } from '@/components/catalog/ProductGrid';
 import { catalogService } from '@/features/catalog/catalog-service';
 import type { Product } from '@/features/catalog/types';
+import { useCart } from '@/features/cart/CartContext';
 
 export function HomeCatalog() {
+  const { addItem } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
@@ -43,6 +45,7 @@ export function HomeCatalog() {
           isLoading={isLoading}
           error={error}
           onRetry={loadProducts}
+          onAddToCart={addItem}
         />
       </div>
     </section>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ProductGrid } from '@/components/catalog/ProductGrid';
 import { catalogService } from '@/features/catalog/catalog-service';
 import type { CatalogFilter, Category, Product } from '@/features/catalog/types';
+import { useCart } from '@/features/cart/CartContext';
 
 type ProductsContentProps = {
   initialCategoryId?: string;
@@ -18,6 +19,7 @@ const sortOptions: Array<{ value: NonNullable<CatalogFilter['sort']>; label: str
 const selectClassName = 'checkout-input w-full cursor-pointer py-2.5';
 
 export default function ProductsContent({ initialCategoryId }: ProductsContentProps) {
+  const { addItem } = useCart();
   const [query, setQuery] = useState('');
   const [categoryId, setCategoryId] = useState(initialCategoryId ?? '');
   const [brand, setBrand] = useState('');
@@ -146,7 +148,7 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
           </div>
         </div>
 
-        <ProductGrid products={products} isLoading={isLoading} error={error} onRetry={() => setRetryCount((count) => count + 1)} />
+        <ProductGrid products={products} isLoading={isLoading} error={error} onRetry={() => setRetryCount((count) => count + 1)} onAddToCart={addItem} />
       </div>
     </section>
   );
