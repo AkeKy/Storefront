@@ -7,6 +7,7 @@
   --foreground: #20231f;
   --primary: #4d7c0f;
   --primary-foreground: #ffffff;
+  --primary-hover: #3f6212;
   --secondary: #eef0eb;
   --secondary-foreground: #20231f;
   --accent: #d9f99d;
@@ -27,6 +28,7 @@ html:not(.light) {
   --foreground: #f4f6f1;
   --primary: #a3e635;
   --primary-foreground: #1a2607;
+  --primary-hover: #84cc16;
   --secondary: #252a23;
   --secondary-foreground: #f4f6f1;
   --accent: #365314;
@@ -54,7 +56,7 @@ html:not(.light) {
   .surface-card, .card-dark { background-color: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 1px 2px rgba(32, 35, 31, 0.06); }
   .focus-ring:focus-visible { outline: 3px solid color-mix(in srgb, var(--ring) 50%, transparent); outline-offset: 3px; }
   .btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid transparent; border-radius: 9999px; padding: 0.875rem 2rem; background-color: var(--primary); color: var(--primary-foreground); cursor: pointer; font-size: 0.875rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; transition: background-color 0.2s ease, border-color 0.2s ease; }
-  .btn-primary:hover { background-color: #84cc16; }
+  .btn-primary:hover { background-color: var(--primary-hover); }
   .btn-outline { display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid var(--border); border-radius: 9999px; padding: 0.875rem 2rem; background-color: transparent; color: var(--foreground); cursor: pointer; font-size: 0.875rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; transition: background-color 0.2s ease, border-color 0.2s ease; }
   .btn-outline:hover { border-color: var(--primary); background-color: var(--accent); }
   .grid-12 { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; }
