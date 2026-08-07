@@ -24,6 +24,7 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
   const [sort, setSort] = useState<NonNullable<CatalogFilter['sort']>>('featured');
   const [inStockOnly, setInStockOnly] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<string[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
@@ -47,6 +48,15 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
       })
       .catch(() => {
         if (isCurrent) setCategories([]);
+      });
+
+    catalogService
+      .listProducts()
+      .then((result) => {
+        if (isCurrent) setBrands(Array.from(new Set(result.products.map((product) => product.brand))).sort());
+      })
+      .catch(() => {
+        if (isCurrent) setBrands([]);
       });
 
     return () => {
@@ -83,8 +93,6 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
     setSort('featured');
     setInStockOnly(false);
   };
-
-  const brands = Array.from(new Set(products.map((product) => product.brand))).sort();
 
   return (
     <section className="bg-background py-10 sm:py-14">

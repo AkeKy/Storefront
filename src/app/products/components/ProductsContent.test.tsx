@@ -63,4 +63,16 @@ describe('ProductsContent', () => {
       expect(screen.queryByText('Razer DeathAdder V3')).not.toBeInTheDocument();
     });
   });
+
+  it('keeps brand options available after a search has no matches', async () => {
+    const user = userEvent.setup();
+
+    render(<ProductsContent initialCategoryId={undefined} />);
+
+    await screen.findByText('Razer DeathAdder V3');
+    await user.type(screen.getByRole('searchbox', { name: /search products/i }), 'not-a-product');
+
+    await screen.findByRole('heading', { name: /no products found/i });
+    expect(screen.getByRole('option', { name: 'Razer' })).toBeInTheDocument();
+  });
 });
