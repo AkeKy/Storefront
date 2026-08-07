@@ -18,4 +18,14 @@ describe('createOrder', () => {
       method: 'POST', body: JSON.stringify([{ product_id: 7, amount: 2 }]),
     }));
   });
+
+  it('rejects malformed items before requesting the backend', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_URL', 'https://api.example.test');
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(createOrder([{ quantity: 1, product: { id: 0 } }] as unknown as CartItem[], 'token')).rejects.toThrow(/invalid cart item/i);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });
