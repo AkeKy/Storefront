@@ -33,7 +33,7 @@ describe('catalogService.listProducts', () => {
     await expect(catalogService.listCategories()).resolves.toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: 'keyboards', name: 'Keyboards' }),
-        expect.objectContaining({ id: 'mice', name: 'Mice' }),
+        expect.objectContaining({ id: 'mouse', name: 'Mouse' }),
       ])
     );
   });

@@ -2,7 +2,7 @@ import type { Category, Product } from './types';
 
 export const catalogCategories: Category[] = [
   { id: 'keyboards', name: 'Keyboards' },
-  { id: 'mice', name: 'Mice' },
+  { id: 'mouse', name: 'Mouse' },
   { id: 'headsets', name: 'Headsets' },
   { id: 'monitors', name: 'Monitors' },
   { id: 'storage', name: 'Storage' },
@@ -39,8 +39,8 @@ export const catalogProducts: Product[] = [
     slug: 'logitech-g-pro-x-superlight-2',
     name: 'Logitech G Pro X Superlight 2',
     brand: 'Logitech',
-    categoryId: 'mice',
-    categoryName: 'Mice',
+    categoryId: 'mouse',
+    categoryName: 'Mouse',
     priceTHB: 4990,
     image: 'https://img.rocket.new/generatedImages/rocket_gen_img_1028cb4b2-1772845470794.png',
     imageAlt: 'Logitech G Pro X Superlight 2 mouse',

@@ -23,8 +23,8 @@ const products = [
     slug: 'razer-deathadder-v3',
     name: 'Razer DeathAdder V3',
     brand: 'Razer',
-    categoryId: 'mice',
-    categoryName: 'Mice',
+    categoryId: 'mouse',
+    categoryName: 'Mouse',
     priceTHB: 2990,
     image: '/images/products/razer-deathadder-v3.jpg',
     imageAlt: 'Razer DeathAdder V3 gaming mouse',
@@ -36,7 +36,7 @@ vi.mock('@/features/catalog/catalog-service', () => ({
   catalogService: {
     listCategories: vi.fn().mockResolvedValue([
       { id: 'keyboards', name: 'Keyboards' },
-      { id: 'mice', name: 'Mice' },
+      { id: 'mouse', name: 'Mouse' },
     ]),
     listProducts: vi.fn().mockImplementation(({ query = '' } = {}) => {
       const normalizedQuery = query.toLowerCase();
