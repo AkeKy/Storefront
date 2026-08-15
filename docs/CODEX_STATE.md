@@ -1,0 +1,98 @@
+# Current Objective
+
+Build a credible portfolio storefront for gaming and IT gear. The current delivery is a functional frontend with Gadget Arena visuals, typed catalog browsing, local cart, and a truthful demo-first checkout. A later phase may connect public product data and authenticated orders to the existing Go backend.
+
+## Current Project State
+
+- **CONFIRMED:** Active checkout is the linked worktree on branch `test`; main remains at the original baseline.
+- **CONFIRMED:** GitHub repository was renamed to `AkeKy/Storefront` and local `origin` points there.
+- **CONFIRMED:** The visible site is Gadget Arena, dark by default, with a working light preference.
+- **CONFIRMED:** Catalog browsing is local-fixture backed. There is no database or product-list API wired into this repository.
+
+## Completed Work
+
+- Typed catalog boundary, six fixture products, category/search/brand/stock/sort filtering, and loading/error/empty states.
+- Product-grid and sidebar catalog layout, Thai-baht pricing, stock-aware add-to-cart controls, and image fallback.
+- Persistent local cart with stock clamping and malformed-storage rejection.
+- Checkout delivery validation, demo preview, guarded live Go order adapter, retry/error handling, subtotal-only totals, and duplicate-submit prevention.
+- Theme provider with dark default and stored light preference; token-based dark/light styling.
+- Gadget Arena visual restoration while retaining the working catalog/cart/checkout systems.
+- Vitest configuration and focused test coverage for the systems above.
+
+## Work In Progress
+
+No product feature is currently being implemented. This context-recovery task is creating durable handoff documents only.
+
+## Remaining Work
+
+1. Restore the current worktree dependencies after the local folder rename, then re-run validation.
+2. Decide whether the active product identity should remain Gadget Arena or move to Storefront, and separately whether legacy `byteforge-*` browser keys/package/README should be migrated.
+3. Finish any desired frontend polish only after that naming decision; review active UI rather than legacy unused components.
+4. Before backend integration, define the public product/category response contract and product-detail requirements.
+5. Implement the missing Go backend public product endpoints in the backend repository, then replace the catalog adapter without changing UI consumers.
+6. Define customer authentication/order/payment policy before exposing live order submission to public users.
+
+## Known Bugs / Problems
+
+- **CONFIRMED, blocking local verification:** The worktree was moved on Windows. Its pnpm `node_modules` contained absolute junctions to the old path, so `pnpm dev` could not resolve `next`. From the active worktree run:
+
+  ```powershell
+  pnpm install --ignore-workspace --force
+  pnpm test
+  pnpm type-check
+  pnpm build
+  ```
+
+- **CONFIRMED:** `git status` reports `Header.tsx`, `AppLogo.tsx`, and `ThemeContext.tsx` modified, while `git diff --raw` produced no content diff and the index/working blob IDs matched. Treat this as a likely racy-index/stat issue after formatting/moving, not as confirmed source edits. Refresh the index and inspect a real diff before staging.
+- **CONFIRMED:** `AppIcon.tsx` and `AppImage.tsx` still use broad `any` props. Existing build-warning design also identifies missing image-alt/static typing warnings and an `outputFileTracingRoot` workspace-root warning as cleanup work. Do not claim a warning-free build until re-run.
+- **CONFIRMED:** README and package name still say ByteForge even though visible product identity is Gadget Arena and repository is Storefront.
+- **CONFIRMED:** Legacy unused home components contain fake ratings, testimonials, US-dollar prices, or shipping claims. They are not imported by the active home page.
+- **UNKNOWN:** Exact Go backend source location, current runtime availability, complete request schema beyond the documented order payload, and auth lifecycle cannot be verified from this repository.
+
+## Important Constraints
+
+- Keep catalog UI behind `CatalogService`; no direct fixture dependence in components.
+- Keep catalog fixture-backed until public product endpoints exist; do not fabricate backend behavior.
+- Preserve demo-first checkout and do not add public token entry/payment controls without explicit approval.
+- Preserve Thai baht, factual availability, accessible controls/states, and the global dark-default theme model.
+- Do not reintroduce fake reviews/ratings/social proof/payment or shipping claims/dead links.
+- Read `AGENTS.md`, this state file, `ARCHITECTURE.md`, and relevant `DECISIONS.md` entries after a compaction; then verify against source and Git status.
+
+## Important Decisions
+
+See `docs/DECISIONS.md`. The continuation-critical decisions are: typed fixture adapter, demo-first order adapter, local defensive cart, Gadget Arena dark visual default, and factual-only content.
+
+## Relevant Files
+
+- `AGENTS.md` — durable project rules and continuation workflow.
+- `docs/ARCHITECTURE.md` — actual module/data-flow map.
+- `docs/DECISIONS.md` — recovered decisions and evidence.
+- `src/features/catalog/` — current catalog types, fixtures, and adapter boundary.
+- `src/features/cart/CartContext.tsx` — cart state and persistence contract.
+- `src/features/orders/order-service.ts` — only backend request boundary.
+- `src/app/products/components/ProductsContent.tsx` — catalog filter/request owner.
+- `src/app/checkout/components/CheckoutContent.tsx` — customer checkout behavior.
+- `src/context/ThemeContext.tsx` and `src/styles/tailwind.css` — theme contract.
+- `src/app/page.tsx`, `HomeCatalog.tsx`, `Header.tsx`, `Footer.tsx` — active visible shell.
+- `docs/superpowers/specs/` — historical approved designs; cross-check against current code because older ByteForge documents have been superseded.
+
+## Failed / Rejected Approaches
+
+- **CONFIRMED:** Earlier light-first ByteForge UI was superseded by Gadget Arena restoration. Do not switch default theme or page-specific theme behavior without a new decision.
+- **CONFIRMED:** Direct catalog-to-backend integration was intentionally deferred because the required public product list/detail endpoints are not present in recoverable evidence.
+- **CONFIRMED:** Fake catalog/review/social-proof/payment content was intentionally removed from active flows; unused legacy components must not be used as a shortcut.
+- **CONFIRMED:** Moving the nested Windows worktree without dependency recreation broke absolute pnpm junctions. Do not repeat that move procedure while relying on its existing `node_modules`.
+
+## Unresolved Questions
+
+- **UNKNOWN:** Is Gadget Arena the intended long-term customer brand, or should the UI eventually use Storefront or another name?
+- **UNKNOWN:** Which existing Go repository/path contains the backend and which public product/category/detail endpoints are desired?
+- **UNKNOWN:** Whether remote image assets may be retained for a portfolio deployment, or must be licensed/localized.
+- **UNKNOWN:** Whether live checkout will ever include a customer account system and payment provider; current code must remain demo-first until decided.
+
+## Next Steps
+
+1. Run the dependency-recovery command above from the active worktree.
+2. Run `pnpm test`, `pnpm type-check`, and `pnpm build`; record actual results before claiming release readiness.
+3. Review the active `/`, `/products`, and `/checkout` flows and choose the next user-facing improvement or naming decision.
+4. When ready for backend work, create a written API contract before changing `CatalogService`.
