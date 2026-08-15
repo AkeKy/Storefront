@@ -5,6 +5,7 @@ import Link from 'next/link';
 import AppImage from '@/components/ui/AppImage';
 import Icon from '@/components/ui/AppIcon';
 import { useCart } from '@/features/cart/CartContext';
+import { useLanguage, type MessageKey } from '@/features/i18n/LanguageContext';
 import { createOrder, type OrderSubmissionResult } from '@/features/orders/order-service';
 
 const currency = new Intl.NumberFormat('th-TH', {
@@ -22,7 +23,12 @@ export type DeliveryForm = {
   postalCode: string;
   phone: string;
 };
-type DeliveryErrors = Partial<Record<keyof DeliveryForm, string>>;
+type DeliveryErrorCode =
+  | 'validation.required'
+  | 'validation.email'
+  | 'validation.postalCode'
+  | 'validation.phone';
+type DeliveryErrors = Partial<Record<keyof DeliveryForm, DeliveryErrorCode>>;
 
 const initialForm: DeliveryForm = {
   email: '',
@@ -47,39 +53,40 @@ const requiredFields: Array<keyof DeliveryForm> = [
 const fieldMeta: Record<
   keyof DeliveryForm,
   {
-    label: string;
+    labelKey: MessageKey;
     type?: 'email' | 'tel' | 'text';
     autoComplete: string;
     inputMode?: 'numeric' | 'tel';
   }
 > = {
-  email: { label: 'Email address', type: 'email', autoComplete: 'email' },
-  firstName: { label: 'First name', autoComplete: 'given-name' },
-  lastName: { label: 'Last name', autoComplete: 'family-name' },
-  address: { label: 'Street address', autoComplete: 'street-address' },
-  city: { label: 'City / district', autoComplete: 'address-level2' },
-  province: { label: 'Province', autoComplete: 'address-level1' },
-  postalCode: { label: 'Postal code', autoComplete: 'postal-code', inputMode: 'numeric' },
-  phone: { label: 'Phone number', type: 'tel', autoComplete: 'tel', inputMode: 'tel' },
+  email: { labelKey: 'checkout.email', type: 'email', autoComplete: 'email' },
+  firstName: { labelKey: 'checkout.firstName', autoComplete: 'given-name' },
+  lastName: { labelKey: 'checkout.lastName', autoComplete: 'family-name' },
+  address: { labelKey: 'checkout.address', autoComplete: 'street-address' },
+  city: { labelKey: 'checkout.city', autoComplete: 'address-level2' },
+  province: { labelKey: 'checkout.province', autoComplete: 'address-level1' },
+  postalCode: { labelKey: 'checkout.postalCode', autoComplete: 'postal-code', inputMode: 'numeric' },
+  phone: { labelKey: 'checkout.phone', type: 'tel', autoComplete: 'tel', inputMode: 'tel' },
 };
 
 export function validateDeliveryForm(form: DeliveryForm): DeliveryErrors {
   const errors: DeliveryErrors = {};
   requiredFields.forEach((field) => {
-    if (!form[field].trim()) errors[field] = 'This field is required.';
+    if (!form[field].trim()) errors[field] = 'validation.required';
   });
   if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
-    errors.email = 'Enter a valid email address.';
+    errors.email = 'validation.email';
   if (form.postalCode.trim() && !/^\d{5}$/.test(form.postalCode.trim()))
-    errors.postalCode = 'Enter a 5-digit postal code.';
+    errors.postalCode = 'validation.postalCode';
   const phoneDigits = form.phone.replace(/[\s-]/g, '');
   if (form.phone.trim() && !/^0\d{8,9}$/.test(phoneDigits))
-    errors.phone = 'Enter a Thai phone number starting with 0.';
+    errors.phone = 'validation.phone';
   return errors;
 }
 
 export default function CheckoutContent() {
   const { items, itemCount, subtotalTHB, updateQuantity, removeItem, clearCart } = useCart();
+  const { t } = useLanguage();
   const [form, setForm] = useState(initialForm);
   const [reviewing, setReviewing] = useState(false);
   const [errors, setErrors] = useState<DeliveryErrors>({});
@@ -108,7 +115,7 @@ export default function CheckoutContent() {
       setResult(nextResult);
     } catch (error) {
       setSubmissionError(
-        error instanceof Error ? error.message : 'We could not submit your order. Please try again.'
+        error instanceof Error ? error.message : t('catalog.loadError')
       );
     } finally {
       setIsSubmitting(false);
@@ -121,15 +128,15 @@ export default function CheckoutContent() {
         <div className="max-w-md text-center">
           <Icon name="CheckIcon" size={40} className="mx-auto mb-5 text-primary" />
           <h1 className="text-display-md">
-            {result.mode === 'demo' ? 'PREVIEW COMPLETE' : 'ORDER CONFIRMED'}
+            {result.mode === 'demo' ? t('checkout.previewComplete') : t('checkout.orderConfirmed')}
           </h1>
           <p className="mt-4 text-muted-foreground">
             {result.mode === 'demo'
-              ? 'Demo preview complete. No payment or backend order was submitted, and your cart is unchanged.'
-              : 'Your order request was submitted successfully. Your cart has been cleared.'}
+              ? t('checkout.previewResult')
+              : t('checkout.submittedResult')}
           </p>
           <Link href="/products" className="btn-primary mt-8">
-            Continue shopping
+            {t('checkout.continueShopping')}
           </Link>
         </div>
       </div>
@@ -139,36 +146,32 @@ export default function CheckoutContent() {
   return (
     <div className="mx-auto max-w-screen-xl px-6 pb-16 pt-28">
       <Link href="/products" className="text-sm font-semibold text-primary hover:underline">
-        ← Continue shopping
+        ← {t('checkout.continueShopping')}
       </Link>
-      <h1 className="mt-4 text-display-md">CHECKOUT</h1>
+      <h1 className="mt-4 text-display-md">{t('checkout.title')}</h1>
       <p className="mt-3 max-w-3xl text-sm text-muted-foreground">
-        Demo-first checkout: completing this form creates a preview only—no payment or order is
-        sent. A live API order is sent only when a developer has already configured an authenticated
-        session in this browser.
+        {t('checkout.demoNotice')}
       </p>
       <div className="mt-8 grid gap-8 lg:grid-cols-5">
         <section className="surface-card p-6 lg:col-span-3">
-          <h2 className="text-xl font-bold">Delivery details</h2>
+          <h2 className="text-xl font-bold">{t('checkout.deliveryDetails')}</h2>
           {hasValidationError && (
             <p
               role="alert"
               className="mt-4 rounded-lg border border-destructive p-3 text-sm text-destructive"
             >
-              Enter your name and delivery address, plus contact details, before reviewing your
-              order.
+              {t('checkout.validationSummary')}
             </p>
           )}
           {reviewing ? (
             <div className="mt-6">
-              <h3 className="font-bold">Review your order</h3>
+              <h3 className="font-bold">{t('checkout.reviewTitle')}</h3>
               <p className="mt-2 text-sm text-muted-foreground">
                 {form.firstName} {form.lastName}, {form.address}, {form.city}, {form.province}{' '}
                 {form.postalCode}
               </p>
               <p className="mt-3 text-sm text-muted-foreground">
-                This normally completes a demo preview. It only submits a live order when a
-                developer-configured authenticated API session is already available in this browser.
+                {t('checkout.reviewNotice')}
               </p>
               {submissionError && (
                 <div
@@ -181,7 +184,7 @@ export default function CheckoutContent() {
                     onClick={submitOrder}
                     disabled={isSubmitting}
                   >
-                    Retry
+                    {t('checkout.retry')}
                   </button>
                 </div>
               )}
@@ -191,7 +194,7 @@ export default function CheckoutContent() {
                   onClick={() => setReviewing(false)}
                   disabled={isSubmitting}
                 >
-                  Edit details
+                  {t('checkout.editDetails')}
                 </button>
                 <button
                   className="btn-primary"
@@ -199,8 +202,8 @@ export default function CheckoutContent() {
                   disabled={items.length === 0 || isSubmitting}
                 >
                   {isSubmitting
-                    ? 'Submitting order...'
-                    : `Submit order · ${currency.format(subtotalTHB)}`}
+                    ? t('checkout.submitting')
+                    : t('checkout.submitOrder', { total: currency.format(subtotalTHB) })}
                 </button>
               </div>
             </div>
@@ -213,7 +216,7 @@ export default function CheckoutContent() {
                   const errorId = `checkout-${key}-error`;
                   return (
                     <label key={key} className={key === 'address' ? 'sm:col-span-2' : ''}>
-                      <span className="mb-1 block text-sm font-semibold">{meta.label}</span>
+                      <span className="mb-1 block text-sm font-semibold">{t(meta.labelKey)}</span>
                       <input
                         className="checkout-input w-full"
                         type={meta.type ?? 'text'}
@@ -226,7 +229,7 @@ export default function CheckoutContent() {
                       />
                       {error && (
                         <p id={errorId} role="alert" className="mt-1 text-sm text-destructive">
-                          {error}
+                          {t(error)}
                         </p>
                       )}
                     </label>
@@ -234,17 +237,18 @@ export default function CheckoutContent() {
                 })}
               </div>
               <button className="btn-primary mt-6 w-full justify-center" onClick={reviewOrder}>
-                Review order
+                {t('checkout.reviewOrder')}
               </button>
             </>
           )}
         </section>
         <aside className="surface-card h-fit p-6 lg:col-span-2">
           <h2 className="text-xl font-bold">
-            Order summary <span className="text-sm text-muted-foreground">({itemCount})</span>
+            {t('checkout.orderSummary')}{' '}
+            <span className="text-sm text-muted-foreground">({itemCount})</span>
           </h2>
           {items.length === 0 ? (
-            <p className="mt-4 text-muted-foreground">Your cart is empty.</p>
+            <p className="mt-4 text-muted-foreground">{t('checkout.emptyCart')}</p>
           ) : (
             <div className="mt-5 space-y-4">
               {items.map((item) => (
@@ -265,7 +269,7 @@ export default function CheckoutContent() {
                     </p>
                     <div className="mt-2 flex items-center gap-2">
                       <button
-                        aria-label={`Decrease ${item.product.name} quantity`}
+                        aria-label={t('checkout.decreaseQuantity', { name: item.product.name })}
                         onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                         disabled={isSubmitting}
                       >
@@ -273,7 +277,7 @@ export default function CheckoutContent() {
                       </button>
                       <span>{item.quantity}</span>
                       <button
-                        aria-label={`Increase ${item.product.name} quantity`}
+                        aria-label={t('checkout.increaseQuantity', { name: item.product.name })}
                         onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                         disabled={isSubmitting}
                       >
@@ -284,7 +288,7 @@ export default function CheckoutContent() {
                         onClick={() => removeItem(item.product.id)}
                         disabled={isSubmitting}
                       >
-                        Remove
+                        {t('checkout.remove')}
                       </button>
                     </div>
                   </div>
@@ -294,16 +298,16 @@ export default function CheckoutContent() {
           )}
           <div className="mt-6 space-y-2 border-t pt-4 text-sm">
             <p className="flex justify-between">
-              <span>Subtotal</span>
+              <span>{t('checkout.subtotal')}</span>
               <span>{currency.format(subtotalTHB)}</span>
             </p>
             <p className="flex justify-between text-lg font-bold">
-              <span>Total</span>
+              <span>{t('checkout.total')}</span>
               <span>{currency.format(subtotalTHB)}</span>
             </p>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            Delivery quote unavailable in demo. No payment is collected in this checkout.
+            {t('checkout.deliveryUnavailable')}
           </p>
         </aside>
       </div>

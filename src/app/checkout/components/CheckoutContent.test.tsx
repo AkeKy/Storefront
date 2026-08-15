@@ -2,6 +2,7 @@ import { afterEach, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CartProvider } from '@/features/cart/CartContext';
+import { LanguageProvider } from '@/features/i18n/LanguageContext';
 import CheckoutContent, { validateDeliveryForm } from './CheckoutContent';
 
 const { createOrderMock } = vi.hoisted(() => ({ createOrderMock: vi.fn() }));
@@ -21,26 +22,28 @@ const product = {
   stockQuantity: 3,
 };
 
+function renderCheckout() {
+  return render(
+    <LanguageProvider>
+      <CartProvider>
+        <CheckoutContent />
+      </CartProvider>
+    </LanguageProvider>
+  );
+}
+
 beforeEach(() => window.localStorage.clear());
 afterEach(() => createOrderMock.mockReset());
 
 it('blocks review until required delivery details are entered', async () => {
-  render(
-    <CartProvider>
-      <CheckoutContent />
-    </CartProvider>
-  );
+  renderCheckout();
   await userEvent.click(screen.getByRole('button', { name: /review order/i }));
   expect(await screen.findByText(/enter your name and delivery address/i)).toBeInTheDocument();
 });
 
 it('clears the validation alert after every invalid field is corrected', async () => {
   const user = userEvent.setup();
-  render(
-    <CartProvider>
-      <CheckoutContent />
-    </CartProvider>
-  );
+  renderCheckout();
 
   await user.click(screen.getByRole('button', { name: /review order/i }));
   expect(await screen.findByText(/enter your name and delivery address/i)).toBeInTheDocument();
@@ -70,10 +73,21 @@ it('rejects malformed email, Thai phone, and postal code before review', () => {
       phone: '1234567',
     })
   ).toEqual({
-    email: 'Enter a valid email address.',
-    postalCode: 'Enter a 5-digit postal code.',
-    phone: 'Enter a Thai phone number starting with 0.',
+    email: 'validation.email',
+    postalCode: 'validation.postalCode',
+    phone: 'validation.phone',
   });
+});
+
+it('renders Thai delivery labels and validation guidance when Thai is selected', async () => {
+  window.localStorage.setItem('gadget-arena-locale', 'th');
+  const user = userEvent.setup();
+
+  renderCheckout();
+
+  expect(await screen.findByLabelText('อีเมล')).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'ตรวจสอบคำสั่งซื้อ' }));
+  expect(await screen.findByText(/กรอกชื่อและที่อยู่จัดส่ง/)).toBeInTheDocument();
 });
 
 it('accepts delivery details with a valid Thai mobile number', () => {
@@ -95,11 +109,7 @@ it('clears the cart after a configured API order succeeds', async () => {
   window.localStorage.setItem('byteforge-cart', JSON.stringify([{ product, quantity: 1 }]));
   createOrderMock.mockResolvedValue({ mode: 'submitted' });
   const user = userEvent.setup();
-  render(
-    <CartProvider>
-      <CheckoutContent />
-    </CartProvider>
-  );
+  renderCheckout();
 
   await screen.findByText(product.name);
   await user.type(screen.getByLabelText(/email address/i), 'ake@example.com');
@@ -123,11 +133,7 @@ it('keeps a stored cart after a demo checkout preview', async () => {
   window.localStorage.setItem('byteforge-cart', JSON.stringify([{ product, quantity: 1 }]));
   createOrderMock.mockResolvedValue({ mode: 'demo' });
   const user = userEvent.setup();
-  render(
-    <CartProvider>
-      <CheckoutContent />
-    </CartProvider>
-  );
+  renderCheckout();
 
   await screen.findByText(product.name);
   await user.type(screen.getByLabelText(/email address/i), 'ake@example.com');
@@ -159,11 +165,7 @@ it('prevents duplicate submissions while an order request is pending', async () 
       })
   );
   const user = userEvent.setup();
-  render(
-    <CartProvider>
-      <CheckoutContent />
-    </CartProvider>
-  );
+  renderCheckout();
 
   await completeDeliveryDetails(user);
   const submitOrder = await screen.findByRole('button', { name: /submit order/i });
@@ -180,11 +182,7 @@ it('prevents duplicate submissions while an order request is pending', async () 
 
 it('shows the item subtotal as the checkout total without a delivery quote', async () => {
   window.localStorage.setItem('byteforge-cart', JSON.stringify([{ product, quantity: 1 }]));
-  render(
-    <CartProvider>
-      <CheckoutContent />
-    </CartProvider>
-  );
+  renderCheckout();
 
   await screen.findByText(product.name);
   expect(screen.getByText(/delivery quote unavailable in demo/i)).toBeInTheDocument();
