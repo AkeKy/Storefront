@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CartProvider, useCart } from '@/features/cart/CartContext';
+import { LanguageProvider } from '@/features/i18n/LanguageContext';
 import { HomeCatalog } from './HomeCatalog';
 
 vi.mock('@/features/catalog/catalog-service', () => ({
@@ -45,10 +46,12 @@ describe('HomeCatalog', () => {
     const user = userEvent.setup();
 
     render(
-      <CartProvider>
-        <HomeCatalog />
-        <CartItemCount />
-      </CartProvider>
+      <LanguageProvider>
+        <CartProvider>
+          <HomeCatalog />
+          <CartItemCount />
+        </CartProvider>
+      </LanguageProvider>
     );
 
     expect(await screen.findByRole('heading', { name: /top picks/i })).toBeInTheDocument();
@@ -60,5 +63,20 @@ describe('HomeCatalog', () => {
     await user.click(addToCart);
 
     expect(screen.getByLabelText('Cart item count')).toHaveTextContent('1');
+  });
+
+  it('translates the section copy without translating a product model name', async () => {
+    window.localStorage.setItem('gadget-arena-locale', 'th');
+
+    render(
+      <LanguageProvider>
+        <CartProvider>
+          <HomeCatalog />
+        </CartProvider>
+      </LanguageProvider>
+    );
+
+    expect(await screen.findByRole('heading', { name: 'สินค้าแนะนำ' })).toBeInTheDocument();
+    expect(screen.getByText('Keychron Q6 Max')).toBeInTheDocument();
   });
 });

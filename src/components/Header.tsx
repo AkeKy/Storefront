@@ -6,12 +6,31 @@ import AppLogo from '@/components/ui/AppLogo';
 import Icon from '@/components/ui/AppIcon';
 import { useTheme } from '@/context/ThemeContext';
 import { useCart } from '@/features/cart/CartContext';
+import { useLanguage } from '@/features/i18n/LanguageContext';
+
+function LanguageToggle() {
+  const { locale, setLocale, t } = useLanguage();
+  const isThai = locale === 'th';
+
+  return (
+    <button
+      type="button"
+      onClick={() => setLocale(isThai ? 'en' : 'th')}
+      className="rounded-xl border border-border px-2.5 py-2 text-xs font-black tracking-wide text-muted-foreground transition-all duration-200 hover:border-primary hover:text-primary"
+      aria-label={t(isThai ? 'language.switchToEnglish' : 'language.switchToThai')}
+      aria-pressed={isThai}
+    >
+      EN <span aria-hidden="true">/</span> TH
+    </button>
+  );
+}
 
 const Header: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { itemCount } = useCart();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -31,9 +50,9 @@ const Header: React.FC = () => {
   }, [mobileOpen]);
 
   const navLinks = [
-    { label: 'Home', href: '/' },
-    { label: 'Products', href: '/products' },
-    { label: 'Checkout', href: '/checkout' },
+    { label: t('nav.home'), href: '/' },
+    { label: t('nav.products'), href: '/products' },
+    { label: t('nav.checkout'), href: '/checkout' },
   ];
 
   return (
@@ -66,11 +85,13 @@ const Header: React.FC = () => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-3">
+          <LanguageToggle />
+
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
             className="p-2.5 rounded-xl border border-border hover:border-primary transition-all duration-200 group"
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={t(theme === 'dark' ? 'header.switchToLight' : 'header.switchToDark')}
           >
             {theme === 'dark' ? (
               <Icon
@@ -90,7 +111,7 @@ const Header: React.FC = () => {
           <Link
             href="/checkout"
             className="relative p-2.5 rounded-xl border border-border hover:border-primary transition-all duration-200 group"
-            aria-label="Cart"
+            aria-label={t('header.cart')}
           >
             <Icon
               name="ShoppingCartIcon"
@@ -105,14 +126,14 @@ const Header: React.FC = () => {
           </Link>
 
           <Link href="/products" className="hidden md:flex btn-primary text-xs py-2.5 px-5">
-            Shop Now
+            {t('header.shopNow')}
           </Link>
 
           {/* Mobile Hamburger */}
           <button
             onClick={() => setMobileOpen(true)}
             className="md:hidden p-2.5 rounded-xl border border-border hover:border-primary transition-all"
-            aria-label="Open menu"
+            aria-label={t('header.openMenu')}
           >
             <Icon name="Bars3Icon" size={20} className="text-foreground" />
           </button>
@@ -136,7 +157,7 @@ const Header: React.FC = () => {
             <button
               onClick={() => setMobileOpen(false)}
               className="p-2.5 rounded-xl border border-border"
-              aria-label="Close menu"
+              aria-label={t('header.closeMenu')}
             >
               <Icon name="XMarkIcon" size={20} className="text-foreground" />
             </button>
@@ -156,12 +177,15 @@ const Header: React.FC = () => {
           </div>
 
           <div className="px-6 mt-8">
+            <div className="mb-4">
+              <LanguageToggle />
+            </div>
             <Link
               href="/products"
               onClick={() => setMobileOpen(false)}
               className="btn-primary w-full justify-center text-sm py-4"
             >
-              Shop All Products
+              {t('header.shopAll')}
               <Icon name="ArrowRightIcon" size={16} />
             </Link>
           </div>

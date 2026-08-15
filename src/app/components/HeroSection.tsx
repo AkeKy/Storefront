@@ -1,8 +1,13 @@
+'use client';
+
 import Link from 'next/link';
 import AppImage from '@/components/ui/AppImage';
 import Icon from '@/components/ui/AppIcon';
+import { useLanguage } from '@/features/i18n/LanguageContext';
 
 export default function HeroSection() {
+  const { t } = useLanguage();
+
   return (
     <section className="relative flex min-h-screen items-center overflow-hidden px-6 pb-16 pt-28">
       <div className="blob-primary pointer-events-none absolute left-1/4 top-20 h-[500px] w-[500px] opacity-60" />
@@ -11,20 +16,20 @@ export default function HeroSection() {
 
       <div className="grid-12 relative z-10 mx-auto w-full max-w-screen-xl items-center">
         <div className="col-span-12 flex flex-col gap-6 lg:col-span-7">
-          <span className="tag-neon w-fit">Gaming gear &amp; PC setup</span>
+          <span className="tag-neon w-fit">{t('hero.tag')}</span>
           <h1 className="text-display text-foreground">
-            PLAY AT
+            {t('hero.heading.before')}
             <br />
-            <span className="gradient-text-primary">THE EDGE</span>
+            <span className="gradient-text-primary">{t('hero.heading.highlight')}</span>
             <br />
-            OF POWER.
+            {t('hero.heading.after')}
           </h1>
           <p className="max-w-lg text-lg font-medium leading-relaxed text-muted-foreground">
-            Browse gaming peripherals and PC gear with current stock status and Thai baht pricing.
+            {t('hero.description')}
           </p>
           <div className="flex flex-wrap items-center gap-4">
             <Link href="/products" className="btn-primary group">
-              Shop the catalog
+              {t('hero.shopCatalog')}
               <Icon
                 name="ArrowRightIcon"
                 size={16}
@@ -32,7 +37,7 @@ export default function HeroSection() {
               />
             </Link>
             <Link href="#featured-gear" className="btn-outline">
-              See featured gear
+              {t('hero.seeFeatured')}
             </Link>
           </div>
         </div>
@@ -52,11 +57,11 @@ export default function HeroSection() {
             <div className="mb-1 flex items-center gap-2">
               <div className="pulse-dot h-2 w-2 rounded-full bg-primary" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                Live catalog
+                {t('hero.liveCatalog')}
               </span>
             </div>
-            <p className="text-lg font-black text-foreground">Stock-aware</p>
-            <p className="text-xs text-muted-foreground">Add available gear to cart</p>
+            <p className="text-lg font-black text-foreground">{t('hero.stockAware')}</p>
+            <p className="text-xs text-muted-foreground">{t('hero.addAvailable')}</p>
           </div>
         </div>
       </div>
