@@ -1,13 +1,14 @@
 # Current Objective
 
-Build a credible portfolio storefront for gaming and IT gear. The current delivery is a functional frontend with Gadget Arena visuals, typed catalog browsing, local cart, and a truthful demo-first checkout. A later phase may connect public product data and authenticated orders to the existing Go backend.
+Build a credible portfolio storefront for gaming and IT gear under the final customer-facing brand **Gadget Arena**. The current delivery is a functional frontend with typed catalog browsing, local cart, and a truthful demo-first checkout. A later phase may connect public product data and authenticated orders to the Go backend in the separate `project_intern1` repository.
 
 ## Current Project State
 
 - **CONFIRMED:** Active checkout is the linked worktree on branch `test`; main remains at the original baseline.
 - **CONFIRMED:** GitHub repository was renamed to `AkeKy/Storefront` and local `origin` points there.
-- **CONFIRMED:** The visible site is Gadget Arena, dark by default, with a working light preference.
+- **CONFIRMED:** Gadget Arena is the final customer-facing brand. The site is dark by default, with a working light preference.
 - **CONFIRMED:** Catalog browsing is local-fixture backed. There is no database or product-list API wired into this repository.
+- **CONFIRMED:** The Go backend is in the separate Git repository named `project_intern1`; its source is not present in this checkout.
 
 ## Completed Work
 
@@ -26,10 +27,10 @@ No product feature is currently being implemented. This context-recovery task is
 ## Remaining Work
 
 1. Restore the current worktree dependencies after the local folder rename, then re-run validation.
-2. Decide whether the active product identity should remain Gadget Arena or move to Storefront, and separately whether legacy `byteforge-*` browser keys/package/README should be migrated.
-3. Finish any desired frontend polish only after that naming decision; review active UI rather than legacy unused components.
-4. Before backend integration, define the public product/category response contract and product-detail requirements.
-5. Implement the missing Go backend public product endpoints in the backend repository, then replace the catalog adapter without changing UI consumers.
+2. Plan a compatibility-safe update for legacy `byteforge-*` browser keys/package/README where it should align with Gadget Arena; repository name Storefront is intentionally separate.
+3. Finish any desired frontend polish; review active UI rather than legacy unused components.
+4. Before backend integration, inspect `project_intern1` and define the public product/category response contract and product-detail requirements.
+5. Implement the missing Go backend public product endpoints in `project_intern1`, then replace the catalog adapter without changing UI consumers.
 6. Define customer authentication/order/payment policy before exposing live order submission to public users.
 
 ## Known Bugs / Problems
@@ -47,7 +48,7 @@ No product feature is currently being implemented. This context-recovery task is
 - **CONFIRMED:** `AppIcon.tsx` and `AppImage.tsx` still use broad `any` props. Existing build-warning design also identifies missing image-alt/static typing warnings and an `outputFileTracingRoot` workspace-root warning as cleanup work. Do not claim a warning-free build until re-run.
 - **CONFIRMED:** README and package name still say ByteForge even though visible product identity is Gadget Arena and repository is Storefront.
 - **CONFIRMED:** Legacy unused home components contain fake ratings, testimonials, US-dollar prices, or shipping claims. They are not imported by the active home page.
-- **UNKNOWN:** Exact Go backend source location, current runtime availability, complete request schema beyond the documented order payload, and auth lifecycle cannot be verified from this repository.
+- **UNKNOWN:** Current `project_intern1` runtime availability, complete request schema beyond the documented order payload, and auth lifecycle cannot be verified from this repository.
 
 ## Important Constraints
 
@@ -85,8 +86,7 @@ See `docs/DECISIONS.md`. The continuation-critical decisions are: typed fixture 
 
 ## Unresolved Questions
 
-- **UNKNOWN:** Is Gadget Arena the intended long-term customer brand, or should the UI eventually use Storefront or another name?
-- **UNKNOWN:** Which existing Go repository/path contains the backend and which public product/category/detail endpoints are desired?
+- **UNKNOWN:** Which public product/category/detail endpoints and response schemas should be added to `project_intern1`?
 - **UNKNOWN:** Whether remote image assets may be retained for a portfolio deployment, or must be licensed/localized.
 - **UNKNOWN:** Whether live checkout will ever include a customer account system and payment provider; current code must remain demo-first until decided.
 
@@ -94,5 +94,5 @@ See `docs/DECISIONS.md`. The continuation-critical decisions are: typed fixture 
 
 1. Run the dependency-recovery command above from the active worktree.
 2. Run `pnpm test`, `pnpm type-check`, and `pnpm build`; record actual results before claiming release readiness.
-3. Review the active `/`, `/products`, and `/checkout` flows and choose the next user-facing improvement or naming decision.
-4. When ready for backend work, create a written API contract before changing `CatalogService`.
+3. Review the active `/`, `/products`, and `/checkout` flows and choose the next user-facing improvement.
+4. When ready for backend work, inspect `project_intern1` and create a written API contract before changing `CatalogService`.
