@@ -2,7 +2,7 @@
 
 ## System overview
 
-This repository contains a Next.js 15 / React 19 customer storefront. It renders three App Router pages: home (`/`), product catalog (`/products`), and checkout (`/checkout`). The app currently has no database and no backend source code in this repository.
+This repository contains a Next.js 15 / React 19 customer storefront. It renders three App Router pages: home (`/`), product catalog (`/products`), and checkout (`/checkout`). The app currently has no database and no backend source code in this repository. The related Go backend is in the separate `project_intern1` Git repository.
 
 The visible product is a Gadget Arena storefront. The GitHub repository is `AkeKy/Storefront`; some package, storage-key, and documentation text remain from an earlier ByteForge iteration.
 

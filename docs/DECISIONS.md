@@ -29,11 +29,11 @@ Status labels distinguish direct evidence from recovered context. A decision sho
 - **Consequences:** Cart survives browser reloads on the same browser but is not shared across devices. The persisted storage key remains `byteforge-cart` for compatibility.
 - **Evidence:** `src/features/cart/CartContext.tsx`, `cart.test.ts`, `order-service.test.ts`.
 
-## Gadget Arena is the active visual identity; dark is the default
+## Gadget Arena is the final customer-facing identity; dark is the default
 
 - **Status:** CONFIRMED
-- **Decision:** The visible storefront uses the restored Gadget Arena dark/neon visual treatment, with an accessible light-mode toggle.
-- **Rationale:** Git history records the restoration commits and current layout/header/footer/style code uses Gadget Arena. The current product-catalog design explicitly requires the global dark default rather than a page-specific mode.
+- **Decision:** The visible storefront uses the final Gadget Arena identity and restored dark/neon visual treatment, with an accessible light-mode toggle.
+- **Rationale:** Git history records the restoration commits and current layout/header/footer/style code uses Gadget Arena. The user explicitly confirmed Gadget Arena as the final brand on 2026-08-15. The current product-catalog design explicitly requires the global dark default rather than a page-specific mode.
 - **Alternatives known:** An earlier ByteForge light-first treatment was implemented, then superseded by the restoration commits. Do not revive it casually.
 - **Consequences:** Theme must be controlled only through the global provider/tokens. Existing saved `byteforge-theme` data is still read for compatibility.
 - **Evidence:** `df700f0`, `e220872`, `src/context/ThemeContext.tsx`, `src/styles/tailwind.css`, catalog-layout spec.
@@ -56,11 +56,12 @@ Status labels distinguish direct evidence from recovered context. A decision sho
 - **Consequences:** Perceived image load time depends on external hosts. Image fallback behavior must remain covered.
 - **Evidence:** `image-hosts.config.mjs`, `AppImage.tsx`, `ProductCard.test.tsx`, Gadget Arena restoration spec.
 
-## Repository/name migration is incomplete
+## Repository name and technical names remain distinct from the final brand
 
 - **Status:** CONFIRMED
-- **Decision:** GitHub repository is `AkeKy/Storefront`; current UI identity remains Gadget Arena; internal ByteForge names remain.
-- **Rationale:** The repository rename and branch/worktree rename occurred after the implementation history. No code-level naming migration has been approved or completed.
-- **Alternatives known:** Rename every technical key and all prose. The required compatibility and desired final brand are UNKNOWN.
-- **Consequences:** Do not make broad naming substitutions. Plan a migration if the user chooses a single product/technical identity.
+- **Decision:** GitHub repository is `AkeKy/Storefront`; the final UI identity is Gadget Arena; internal ByteForge names remain pending a compatibility-safe migration.
+- **Rationale:** The repository rename and branch/worktree rename occurred after the implementation history. The user confirmed Gadget Arena as the final brand on 2026-08-15. No code-level technical-name migration has been approved or completed.
+- **Alternatives known:** Rename every technical key and all prose. The required local-storage compatibility approach remains UNKNOWN.
+- **Consequences:** Do not make broad naming substitutions. Any migration must preserve or intentionally migrate existing browser data and update tests.
+- **Evidence:** User confirmation (2026-08-15), current Git remote/configuration, `package.json`, README, layout/header/footer, storage keys.
 - **Evidence:** Current Git remote/configuration, `package.json`, README, layout/header/footer, storage keys.
