@@ -13,7 +13,7 @@ function LocaleProbe() {
 
   return (
     <>
-      <p>{`${locale}:${t('nav.home')}:${categoryLabel('mice', 'Mice')}:${stockLabel(true)}:${badgeLabel('New')}`}</p>
+      <p>{`${locale}:${t('nav.home')}:${categoryLabel('mouse', 'Mouse')}:${stockLabel(true)}:${badgeLabel('New')}`}</p>
       <button type="button" onClick={() => setLocale('th')}>
         Switch
       </button>
@@ -33,7 +33,7 @@ describe('LanguageProvider', () => {
       </LanguageProvider>
     );
 
-    expect(screen.getByText(`en:Home:Mice:In stock:New`)).toBeInTheDocument();
+    expect(screen.getByText(`en:Home:Mouse:In stock:New`)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Switch' }));
 
@@ -59,6 +59,6 @@ describe('LanguageProvider', () => {
       </LanguageProvider>
     );
 
-    expect(screen.getByText(`${DEFAULT_LOCALE}:Home:Mice:In stock:New`)).toBeInTheDocument();
+    expect(screen.getByText(`${DEFAULT_LOCALE}:Home:Mouse:In stock:New`)).toBeInTheDocument();
   });
 });

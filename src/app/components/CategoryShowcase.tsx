@@ -7,9 +7,9 @@ import { useLanguage } from '@/features/i18n/LanguageContext';
 
 const categories = [
   {
-    id: 'mice',
-    name: 'Mice & Pads',
-    subtitleKey: 'categories.mice.subtitle',
+    id: 'mouse',
+    name: 'Mouse & Pads',
+    subtitleKey: 'categories.mouse.subtitle',
     image: 'https://img.rocket.new/generatedImages/rocket_gen_img_1eb9e1c8e-1767122926047.png',
     alt: 'Gaming mouse on a dark mousepad',
   },

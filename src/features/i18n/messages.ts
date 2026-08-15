@@ -38,7 +38,7 @@ export const messages = {
     'categories.heading.before': 'Gear',
     'categories.heading.highlight': 'up',
     'categories.all': 'All categories',
-    'categories.mice.subtitle': 'Precision control',
+    'categories.mouse.subtitle': 'Precision control',
     'categories.keyboards.subtitle': 'Mechanical feel',
     'categories.headsets.subtitle': 'Immersive audio',
     'categories.monitors.subtitle': 'High refresh rates',
@@ -153,7 +153,7 @@ export const messages = {
     'categories.heading.before': 'เติม',
     'categories.heading.highlight': 'อุปกรณ์',
     'categories.all': 'ทุกหมวดหมู่',
-    'categories.mice.subtitle': 'ควบคุมได้แม่นยำ',
+    'categories.mouse.subtitle': 'ควบคุมได้แม่นยำ',
     'categories.keyboards.subtitle': 'สัมผัสแบบแมคคานิคัล',
     'categories.headsets.subtitle': 'เสียงเต็มอรรถรส',
     'categories.monitors.subtitle': 'รีเฟรชเรตสูง',
@@ -238,13 +238,13 @@ export type MessageKey = keyof typeof messages.en;
 
 export const categoryMessages: Record<Locale, Record<string, string>> = {
   en: {
-    mice: 'Mice',
+    mouse: 'Mouse',
     keyboards: 'Keyboards',
     headsets: 'Headsets',
     monitors: 'Monitors',
   },
   th: {
-    mice: 'เมาส์',
+    mouse: 'เมาส์',
     keyboards: 'คีย์บอร์ด',
     headsets: 'หูฟัง',
     monitors: 'จอภาพ',
