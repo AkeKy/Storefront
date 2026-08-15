@@ -103,7 +103,8 @@ export const messages = {
     'checkout.orderConfirmed': 'Order confirmed',
     'checkout.previewResult':
       'Demo preview complete. No payment or backend order was submitted, and your cart is unchanged.',
-    'checkout.submittedResult': 'Your order request was submitted successfully. Your cart has been cleared.',
+    'checkout.submittedResult':
+      'Your order request was submitted successfully. Your cart has been cleared.',
     'checkout.email': 'Email address',
     'checkout.firstName': 'First name',
     'checkout.lastName': 'Last name',
@@ -142,8 +143,7 @@ export const messages = {
     'hero.heading.before': 'ยกระดับ',
     'hero.heading.highlight': 'ขีดจำกัด',
     'hero.heading.after': 'ของการเล่น',
-    'hero.description':
-      'เลือกอุปกรณ์เกมมิงและพีซี พร้อมสถานะสต็อกปัจจุบันและราคาเงินบาทไทย',
+    'hero.description': 'เลือกอุปกรณ์เกมมิงและพีซี พร้อมสถานะสต็อกปัจจุบันและราคาเงินบาทไทย',
     'hero.shopCatalog': 'เลือกดูสินค้า',
     'hero.seeFeatured': 'ดูสินค้าแนะนำ',
     'hero.liveCatalog': 'รายการสินค้าปัจจุบัน',

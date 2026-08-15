@@ -27,6 +27,9 @@ describe('Footer', () => {
       </LanguageProvider>
     );
 
-    expect(await screen.findByRole('link', { name: 'สินค้า' })).toHaveAttribute('href', '/products');
+    expect(await screen.findByRole('link', { name: 'สินค้า' })).toHaveAttribute(
+      'href',
+      '/products'
+    );
   });
 });

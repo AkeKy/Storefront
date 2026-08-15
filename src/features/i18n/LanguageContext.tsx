@@ -53,7 +53,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       t,
       categoryLabel: (categoryId, fallback) => categoryMessages[locale][categoryId] ?? fallback,
       stockLabel: (isInStock) => t(isInStock ? 'catalog.inStock' : 'catalog.outOfStock'),
-      badgeLabel: (badge) => (badge ? badgeMessages[locale][badge] ?? badge : undefined),
+      badgeLabel: (badge) => (badge ? (badgeMessages[locale][badge] ?? badge) : undefined),
     };
   }, [locale]);
 

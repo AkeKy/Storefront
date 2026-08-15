@@ -64,8 +64,6 @@ describe('ProductCard', () => {
     expect(await screen.findByText('คีย์บอร์ด')).toBeInTheDocument();
     expect(screen.getByText('มีสินค้า')).toBeInTheDocument();
     expect(screen.getByText('Keychron Q6 Max')).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'เพิ่ม Keychron Q6 Max ลงตะกร้า' })
-    ).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'เพิ่ม Keychron Q6 Max ลงตะกร้า' })).toBeEnabled();
   });
 });

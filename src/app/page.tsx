@@ -17,15 +17,11 @@ function DeliveryAndReturns() {
           <h2 id="delivery-heading" className="text-xl font-bold text-card-foreground">
             {t('home.delivery.title')}
           </h2>
-          <p className="mt-2 leading-7 text-muted-foreground">
-            {t('home.delivery.description')}
-          </p>
+          <p className="mt-2 leading-7 text-muted-foreground">{t('home.delivery.description')}</p>
         </div>
         <div>
           <h2 className="text-xl font-bold text-card-foreground">{t('home.returns.title')}</h2>
-          <p className="mt-2 leading-7 text-muted-foreground">
-            {t('home.returns.description')}
-          </p>
+          <p className="mt-2 leading-7 text-muted-foreground">{t('home.returns.description')}</p>
         </div>
       </div>
     </section>

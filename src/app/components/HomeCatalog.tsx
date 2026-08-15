@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ProductGrid } from '@/components/catalog/ProductGrid';
 import { catalogService } from '@/features/catalog/catalog-service';
 import type { Product } from '@/features/catalog/types';
@@ -14,7 +14,7 @@ export function HomeCatalog() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
 
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     setIsLoading(true);
     setError(undefined);
 
@@ -26,11 +26,11 @@ export function HomeCatalog() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     void loadProducts();
-  }, [t]);
+  }, [loadProducts]);
 
   return (
     <section id="featured-gear" className="px-6 py-20" aria-labelledby="selected-gear-heading">
@@ -40,9 +40,7 @@ export function HomeCatalog() {
           <h2 id="selected-gear-heading" className="text-display-md text-foreground">
             {t('homeCatalog.heading')}
           </h2>
-          <p className="mt-3 text-muted-foreground">
-            {t('homeCatalog.description')}
-          </p>
+          <p className="mt-3 text-muted-foreground">{t('homeCatalog.description')}</p>
         </div>
         <ProductGrid
           products={products}
