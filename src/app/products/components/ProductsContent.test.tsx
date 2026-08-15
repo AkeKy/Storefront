@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { CartProvider } from '@/features/cart/CartContext';
+import { LanguageProvider } from '@/features/i18n/LanguageContext';
 import ProductsContent from './ProductsContent';
 
 const products = [
@@ -53,9 +54,11 @@ vi.mock('@/features/catalog/catalog-service', () => ({
 describe('ProductsContent', () => {
   it('groups catalogue filters in an accessible sidebar', async () => {
     render(
-      <CartProvider>
-        <ProductsContent initialCategoryId={undefined} />
-      </CartProvider>
+      <LanguageProvider>
+        <CartProvider>
+          <ProductsContent initialCategoryId={undefined} />
+        </CartProvider>
+      </LanguageProvider>
     );
 
     const filters = await screen.findByRole('complementary', { name: /filters/i });
@@ -70,9 +73,11 @@ describe('ProductsContent', () => {
     const user = userEvent.setup();
 
     render(
-      <CartProvider>
-        <ProductsContent initialCategoryId={undefined} />
-      </CartProvider>
+      <LanguageProvider>
+        <CartProvider>
+          <ProductsContent initialCategoryId={undefined} />
+        </CartProvider>
+      </LanguageProvider>
     );
 
     await screen.findByText('Razer DeathAdder V3');
@@ -88,9 +93,11 @@ describe('ProductsContent', () => {
     const user = userEvent.setup();
 
     render(
-      <CartProvider>
-        <ProductsContent initialCategoryId={undefined} />
-      </CartProvider>
+      <LanguageProvider>
+        <CartProvider>
+          <ProductsContent initialCategoryId={undefined} />
+        </CartProvider>
+      </LanguageProvider>
     );
 
     await screen.findByText('Razer DeathAdder V3');
@@ -98,5 +105,21 @@ describe('ProductsContent', () => {
 
     await screen.findByRole('heading', { name: /no products found/i });
     expect(screen.getByRole('option', { name: 'Razer' })).toBeInTheDocument();
+  });
+
+  it('translates catalog labels and categories without changing model names', async () => {
+    window.localStorage.setItem('gadget-arena-locale', 'th');
+
+    render(
+      <LanguageProvider>
+        <CartProvider>
+          <ProductsContent initialCategoryId={undefined} />
+        </CartProvider>
+      </LanguageProvider>
+    );
+
+    expect(await screen.findByRole('heading', { name: 'สินค้าทั้งหมด' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'คีย์บอร์ด' })).toBeInTheDocument();
+    expect(screen.getByText('Keychron Q6 Max')).toBeInTheDocument();
   });
 });

@@ -3,22 +3,22 @@ type StatusMessageProps =
   | { state: 'empty'; title?: string; description?: string }
   | { state: 'error'; title?: string; description?: string; onRetry?: () => void };
 
-const defaults = {
-  loading: {
-    title: 'Loading products',
-    description: 'Finding the right gear for your setup.',
-  },
-  empty: {
-    title: 'No products found',
-    description: 'Try adjusting your search or filters.',
-  },
-  error: {
-    title: 'We could not load products',
-    description: 'Please check your connection and try again.',
-  },
-};
-
 export function StatusMessage(props: StatusMessageProps) {
+  const { t } = useLanguage();
+  const defaults = {
+    loading: {
+      title: t('catalog.statusLoadingTitle'),
+      description: t('catalog.statusLoadingDescription'),
+    },
+    empty: {
+      title: t('catalog.statusEmptyTitle'),
+      description: t('catalog.statusEmptyDescription'),
+    },
+    error: {
+      title: t('catalog.statusErrorTitle'),
+      description: t('catalog.statusErrorDescription'),
+    },
+  };
   const copy = defaults[props.state];
   const title = props.title ?? copy.title;
   const description = props.description ?? copy.description;
@@ -40,9 +40,12 @@ export function StatusMessage(props: StatusMessageProps) {
       <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">{description}</p>
       {props.state === 'error' && props.onRetry && (
         <button className="btn-primary mt-6" type="button" onClick={props.onRetry}>
-          Try again
+          {t('catalog.tryAgain')}
         </button>
       )}
     </section>
   );
 }
+'use client';
+
+import { useLanguage } from '@/features/i18n/LanguageContext';
