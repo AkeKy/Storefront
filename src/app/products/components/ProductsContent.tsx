@@ -5,21 +5,17 @@ import { ProductGrid } from '@/components/catalog/ProductGrid';
 import { catalogService } from '@/features/catalog/catalog-service';
 import type { CatalogFilter, Category, Product } from '@/features/catalog/types';
 import { useCart } from '@/features/cart/CartContext';
+import { useLanguage } from '@/features/i18n/LanguageContext';
 
 type ProductsContentProps = {
   initialCategoryId?: string;
 };
 
-const sortOptions: Array<{ value: NonNullable<CatalogFilter['sort']>; label: string }> = [
-  { value: 'featured', label: 'Featured' },
-  { value: 'price-asc', label: 'Price: low to high' },
-  { value: 'price-desc', label: 'Price: high to low' },
-];
-
 const selectClassName = 'checkout-input w-full cursor-pointer py-2.5';
 
 export default function ProductsContent({ initialCategoryId }: ProductsContentProps) {
   const { addItem } = useCart();
+  const { categoryLabel, t } = useLanguage();
   const [query, setQuery] = useState('');
   const [categoryId, setCategoryId] = useState(initialCategoryId ?? '');
   const [brand, setBrand] = useState('');
@@ -31,6 +27,11 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
   const [retryCount, setRetryCount] = useState(0);
+  const sortOptions: Array<{ value: NonNullable<CatalogFilter['sort']>; label: string }> = [
+    { value: 'featured', label: t('catalog.sortFeatured') },
+    { value: 'price-asc', label: t('catalog.sortPriceAsc') },
+    { value: 'price-desc', label: t('catalog.sortPriceDesc') },
+  ];
 
   useEffect(() => {
     let isCurrent = true;
@@ -78,7 +79,7 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
         if (isCurrent) setProducts(result.products);
       })
       .catch(() => {
-        if (isCurrent) setError('We could not load products. Please try again.');
+        if (isCurrent) setError(t('catalog.loadError'));
       })
       .finally(() => {
         if (isCurrent) setIsLoading(false);
@@ -87,7 +88,7 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
     return () => {
       isCurrent = false;
     };
-  }, [query, categoryId, brand, sort, inStockOnly, retryCount]);
+  }, [query, categoryId, brand, sort, inStockOnly, retryCount, t]);
 
   const resetFilters = () => {
     setQuery('');
@@ -101,12 +102,12 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
     <section className="dot-pattern-dark bg-background pb-16 pt-32 sm:pt-36">
       <div className="mx-auto max-w-screen-2xl px-6">
         <header className="mb-8">
-          <span className="tag-neon mb-3 inline-block">Full catalog</span>
-          <h1 className="text-display-md text-foreground">
-            ALL <span className="gradient-text-primary">GEAR</span>
-          </h1>
+          <span className="tag-neon mb-3 inline-block">{t('catalog.tag')}</span>
+          <h1 className="text-display-md text-foreground">{t('catalog.heading')}</h1>
           <p className="mt-3 text-sm text-muted-foreground" aria-live="polite">
-            {isLoading ? 'Loading products' : `${products.length} products found`}
+            {isLoading
+              ? t('catalog.loadingProducts')
+              : t('catalog.productCount', { count: products.length })}
           </p>
         </header>
 
@@ -116,7 +117,7 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
               className="mb-2 block text-sm font-semibold text-foreground"
               htmlFor="product-search"
             >
-              Search products
+              {t('catalog.search')}
             </label>
             <input
               id="product-search"
@@ -124,7 +125,7 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search products or brands"
+              placeholder={t('catalog.searchPlaceholder')}
             />
           </div>
           <div>
@@ -132,7 +133,7 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
               className="mb-2 block text-sm font-semibold text-foreground"
               htmlFor="product-sort"
             >
-              Sort by
+              {t('catalog.sortBy')}
             </label>
             <select
               id="product-sort"
@@ -161,14 +162,14 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
                 id="catalog-filters-heading"
                 className="text-base font-black uppercase tracking-tight text-foreground"
               >
-                Filters
+                {t('catalog.filters')}
               </h2>
               <button
                 className="text-xs font-bold uppercase tracking-wide text-primary hover:underline"
                 type="button"
                 onClick={resetFilters}
               >
-                Reset all
+                {t('catalog.resetAll')}
               </button>
             </div>
 
@@ -178,7 +179,7 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
                   className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground"
                   htmlFor="product-category"
                 >
-                  Category
+                  {t('catalog.category')}
                 </label>
                 <select
                   id="product-category"
@@ -186,10 +187,10 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
                   value={categoryId}
                   onChange={(event) => setCategoryId(event.target.value)}
                 >
-                  <option value="">All categories</option>
+                  <option value="">{t('catalog.allCategories')}</option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>
-                      {category.name}
+                      {categoryLabel(category.id, category.name)}
                     </option>
                   ))}
                 </select>
@@ -200,7 +201,7 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
                   className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground"
                   htmlFor="product-brand"
                 >
-                  Brand
+                  {t('catalog.brand')}
                 </label>
                 <select
                   id="product-brand"
@@ -208,7 +209,7 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
                   value={brand}
                   onChange={(event) => setBrand(event.target.value)}
                 >
-                  <option value="">All brands</option>
+                  <option value="">{t('catalog.allBrands')}</option>
                   {brands.map((productBrand) => (
                     <option key={productBrand} value={productBrand}>
                       {productBrand}
@@ -228,7 +229,7 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
                   checked={inStockOnly}
                   onChange={(event) => setInStockOnly(event.target.checked)}
                 />
-                In stock only
+                {t('catalog.inStockOnly')}
               </label>
             </div>
           </aside>

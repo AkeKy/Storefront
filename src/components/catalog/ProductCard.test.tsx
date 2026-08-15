@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { Product } from '@/features/catalog/types';
+import { LanguageProvider } from '@/features/i18n/LanguageContext';
 import { ProductCard } from './ProductCard';
 
 const product: Product = {
@@ -22,7 +23,11 @@ describe('ProductCard', () => {
     const user = userEvent.setup();
     const onAddToCart = vi.fn();
 
-    render(<ProductCard product={product} onAddToCart={onAddToCart} />);
+    render(
+      <LanguageProvider>
+        <ProductCard product={product} onAddToCart={onAddToCart} />
+      </LanguageProvider>
+    );
 
     expect(screen.getByText('฿7,990')).toBeInTheDocument();
 
@@ -32,7 +37,11 @@ describe('ProductCard', () => {
   });
 
   it('replaces a failed product image with the local catalog placeholder', () => {
-    render(<ProductCard product={product} />);
+    render(
+      <LanguageProvider>
+        <ProductCard product={product} />
+      </LanguageProvider>
+    );
 
     const image = screen.getByRole('img', { name: product.imageAlt });
     fireEvent.error(image);
@@ -41,5 +50,22 @@ describe('ProductCard', () => {
       'src',
       '/assets/images/no_image.png'
     );
+  });
+
+  it('translates a product category and stock action while preserving its model name', async () => {
+    window.localStorage.setItem('gadget-arena-locale', 'th');
+
+    render(
+      <LanguageProvider>
+        <ProductCard product={product} onAddToCart={vi.fn()} />
+      </LanguageProvider>
+    );
+
+    expect(await screen.findByText('คีย์บอร์ด')).toBeInTheDocument();
+    expect(screen.getByText('มีสินค้า')).toBeInTheDocument();
+    expect(screen.getByText('Keychron Q6 Max')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'เพิ่ม Keychron Q6 Max ลงตะกร้า' })
+    ).toBeEnabled();
   });
 });

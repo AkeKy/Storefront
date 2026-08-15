@@ -1,6 +1,9 @@
+'use client';
+
 import type { Product } from '@/features/catalog/types';
 import { StatusMessage } from '@/components/ui/StatusMessage';
 import { ProductCard } from './ProductCard';
+import { useLanguage } from '@/features/i18n/LanguageContext';
 
 type ProductGridProps = {
   products: Product[];
@@ -17,6 +20,8 @@ export function ProductGrid({
   onRetry,
   onAddToCart,
 }: ProductGridProps) {
+  const { t } = useLanguage();
+
   if (isLoading) {
     return <StatusMessage state="loading" />;
   }
@@ -30,7 +35,10 @@ export function ProductGrid({
   }
 
   return (
-    <section aria-label="Products" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <section
+      aria-label={t('catalog.productsLabel')}
+      className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+    >
       {products.map((product) => (
         <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
       ))}
