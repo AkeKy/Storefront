@@ -24,10 +24,7 @@ export type DeliveryForm = {
   phone: string;
 };
 type DeliveryErrorCode =
-  | 'validation.required'
-  | 'validation.email'
-  | 'validation.postalCode'
-  | 'validation.phone';
+  'validation.required' | 'validation.email' | 'validation.postalCode' | 'validation.phone';
 type DeliveryErrors = Partial<Record<keyof DeliveryForm, DeliveryErrorCode>>;
 
 const initialForm: DeliveryForm = {
@@ -65,7 +62,11 @@ const fieldMeta: Record<
   address: { labelKey: 'checkout.address', autoComplete: 'street-address' },
   city: { labelKey: 'checkout.city', autoComplete: 'address-level2' },
   province: { labelKey: 'checkout.province', autoComplete: 'address-level1' },
-  postalCode: { labelKey: 'checkout.postalCode', autoComplete: 'postal-code', inputMode: 'numeric' },
+  postalCode: {
+    labelKey: 'checkout.postalCode',
+    autoComplete: 'postal-code',
+    inputMode: 'numeric',
+  },
   phone: { labelKey: 'checkout.phone', type: 'tel', autoComplete: 'tel', inputMode: 'tel' },
 };
 
@@ -79,8 +80,7 @@ export function validateDeliveryForm(form: DeliveryForm): DeliveryErrors {
   if (form.postalCode.trim() && !/^\d{5}$/.test(form.postalCode.trim()))
     errors.postalCode = 'validation.postalCode';
   const phoneDigits = form.phone.replace(/[\s-]/g, '');
-  if (form.phone.trim() && !/^0\d{8,9}$/.test(phoneDigits))
-    errors.phone = 'validation.phone';
+  if (form.phone.trim() && !/^0\d{8,9}$/.test(phoneDigits)) errors.phone = 'validation.phone';
   return errors;
 }
 
@@ -114,9 +114,7 @@ export default function CheckoutContent() {
       if (nextResult.mode === 'submitted') clearCart();
       setResult(nextResult);
     } catch (error) {
-      setSubmissionError(
-        error instanceof Error ? error.message : t('catalog.loadError')
-      );
+      setSubmissionError(error instanceof Error ? error.message : t('catalog.loadError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -131,9 +129,7 @@ export default function CheckoutContent() {
             {result.mode === 'demo' ? t('checkout.previewComplete') : t('checkout.orderConfirmed')}
           </h1>
           <p className="mt-4 text-muted-foreground">
-            {result.mode === 'demo'
-              ? t('checkout.previewResult')
-              : t('checkout.submittedResult')}
+            {result.mode === 'demo' ? t('checkout.previewResult') : t('checkout.submittedResult')}
           </p>
           <Link href="/products" className="btn-primary mt-8">
             {t('checkout.continueShopping')}
@@ -149,9 +145,7 @@ export default function CheckoutContent() {
         ← {t('checkout.continueShopping')}
       </Link>
       <h1 className="mt-4 text-display-md">{t('checkout.title')}</h1>
-      <p className="mt-3 max-w-3xl text-sm text-muted-foreground">
-        {t('checkout.demoNotice')}
-      </p>
+      <p className="mt-3 max-w-3xl text-sm text-muted-foreground">{t('checkout.demoNotice')}</p>
       <div className="mt-8 grid gap-8 lg:grid-cols-5">
         <section className="surface-card p-6 lg:col-span-3">
           <h2 className="text-xl font-bold">{t('checkout.deliveryDetails')}</h2>
@@ -170,9 +164,7 @@ export default function CheckoutContent() {
                 {form.firstName} {form.lastName}, {form.address}, {form.city}, {form.province}{' '}
                 {form.postalCode}
               </p>
-              <p className="mt-3 text-sm text-muted-foreground">
-                {t('checkout.reviewNotice')}
-              </p>
+              <p className="mt-3 text-sm text-muted-foreground">{t('checkout.reviewNotice')}</p>
               {submissionError && (
                 <div
                   role="alert"
@@ -306,9 +298,7 @@ export default function CheckoutContent() {
               <span>{currency.format(subtotalTHB)}</span>
             </p>
           </div>
-          <p className="mt-4 text-xs text-muted-foreground">
-            {t('checkout.deliveryUnavailable')}
-          </p>
+          <p className="mt-4 text-xs text-muted-foreground">{t('checkout.deliveryUnavailable')}</p>
         </aside>
       </div>
     </div>

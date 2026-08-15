@@ -1,3 +1,7 @@
+'use client';
+
+import { useLanguage } from '@/features/i18n/LanguageContext';
+
 type StatusMessageProps =
   | { state: 'loading'; title?: string; description?: string }
   | { state: 'empty'; title?: string; description?: string }
@@ -46,6 +50,3 @@ export function StatusMessage(props: StatusMessageProps) {
     </section>
   );
 }
-'use client';
-
-import { useLanguage } from '@/features/i18n/LanguageContext';

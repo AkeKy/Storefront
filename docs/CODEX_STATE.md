@@ -1,6 +1,6 @@
 # Current Objective
 
-Build a credible portfolio storefront for gaming and IT gear under the final customer-facing brand **Gadget Arena**. The current delivery is a functional frontend with typed catalog browsing, local cart, and a truthful demo-first checkout. A later phase may connect public product data and authenticated orders to the Go backend in the separate `project_intern1` repository.
+Build a credible portfolio storefront for gaming and IT gear under the final customer-facing brand **Gadget Arena**. The current delivery is a functional bilingual frontend with typed catalog browsing, local cart, and a truthful demo-first checkout. A later phase may connect public product data and authenticated orders to the Go backend in the separate `project_intern1` repository.
 
 ## Current Project State
 
@@ -19,6 +19,7 @@ Build a credible portfolio storefront for gaming and IT gear under the final cus
 - Theme provider with dark default and stored light preference; token-based dark/light styling.
 - Gadget Arena visual restoration while retaining the working catalog/cart/checkout systems.
 - Vitest configuration and focused test coverage for the systems above.
+- Frontend i18n through `LanguageProvider`: English default, explicit `gadget-arena-locale` browser preference, and Thai UI/category/badge/stock copy while brand and model names stay canonical.
 
 ## Work In Progress
 
@@ -26,34 +27,26 @@ No product feature is currently being implemented. This context-recovery task is
 
 ## Remaining Work
 
-1. Restore the current worktree dependencies after the local folder rename, then re-run validation.
-2. Plan a compatibility-safe update for legacy `byteforge-*` browser keys/package/README where it should align with Gadget Arena; repository name Storefront is intentionally separate.
-3. Finish any desired frontend polish; review active UI rather than legacy unused components.
-4. Before backend integration, inspect `project_intern1` and define the public product/category response contract and product-detail requirements.
-5. Implement the missing Go backend public product endpoints in `project_intern1`, then replace the catalog adapter without changing UI consumers.
-6. Define customer authentication/order/payment policy before exposing live order submission to public users.
+1. Plan a compatibility-safe update for legacy `byteforge-*` browser keys/package/README where it should align with Gadget Arena; repository name Storefront is intentionally separate.
+2. Finish any desired frontend polish; review active UI rather than legacy unused components.
+3. Before backend integration, inspect `project_intern1` and define the public product/category response contract and product-detail requirements.
+4. Implement the missing Go backend public product endpoints in `project_intern1`, then replace the catalog adapter without changing UI consumers.
+5. Define customer authentication/order/payment policy before exposing live order submission to public users.
 
 ## Known Bugs / Problems
-
-- **CONFIRMED, blocking local verification:** The worktree was moved on Windows. Its pnpm `node_modules` contained absolute junctions to the old path, so `pnpm dev` could not resolve `next`. From the active worktree run:
-
-  ```powershell
-  pnpm install --ignore-workspace --force
-  pnpm test
-  pnpm type-check
-  pnpm build
-  ```
 
 - **CONFIRMED:** `git status` reports `Header.tsx`, `AppLogo.tsx`, and `ThemeContext.tsx` modified, while `git diff --raw` produced no content diff and the index/working blob IDs matched. Treat this as a likely racy-index/stat issue after formatting/moving, not as confirmed source edits. Refresh the index and inspect a real diff before staging.
 - **CONFIRMED:** `AppIcon.tsx` and `AppImage.tsx` still use broad `any` props. Existing build-warning design also identifies missing image-alt/static typing warnings and an `outputFileTracingRoot` workspace-root warning as cleanup work. Do not claim a warning-free build until re-run.
 - **CONFIRMED:** README and package name still say ByteForge even though visible product identity is Gadget Arena and repository is Storefront.
 - **CONFIRMED:** Legacy unused home components contain fake ratings, testimonials, US-dollar prices, or shipping claims. They are not imported by the active home page.
+- **CONFIRMED:** On 2026-08-15, `pnpm test` passed 34 tests, `pnpm type-check` passed, and `pnpm build` passed. The build still emits the pre-existing AppIcon/AppImage lint warnings and a multiple-lockfile workspace-root warning.
 - **UNKNOWN:** Current `project_intern1` runtime availability, complete request schema beyond the documented order payload, and auth lifecycle cannot be verified from this repository.
 
 ## Important Constraints
 
 - Keep catalog UI behind `CatalogService`; no direct fixture dependence in components.
 - Keep catalog fixture-backed until public product endpoints exist; do not fabricate backend behavior.
+- Keep UI language state frontend-only through `LanguageProvider`; `gadget-arena-locale` defaults to English and must not alter routes, catalog request data, cart storage, or order payloads.
 - Preserve demo-first checkout and do not add public token entry/payment controls without explicit approval.
 - Preserve Thai baht, factual availability, accessible controls/states, and the global dark-default theme model.
 - Do not reintroduce fake reviews/ratings/social proof/payment or shipping claims/dead links.
