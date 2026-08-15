@@ -4,6 +4,7 @@ import { DM_Sans } from 'next/font/google';
 import '../styles/tailwind.css';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { CartProvider } from '@/features/cart/CartContext';
+import { LanguageProvider } from '@/features/i18n/LanguageContext';
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -41,9 +42,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={dmSans.variable}>
       <body className={dmSans.className}>
-        <ThemeProvider>
-          <CartProvider>{children}</CartProvider>
-        </ThemeProvider>
+        <LanguageProvider>
+          <ThemeProvider>
+            <CartProvider>{children}</CartProvider>
+          </ThemeProvider>
+        </LanguageProvider>
       </body>
     </html>
   );
