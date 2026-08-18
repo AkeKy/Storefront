@@ -6,6 +6,7 @@ Build a credible portfolio storefront for gaming and IT gear under the final cus
 
 - **CONFIRMED:** Active checkout is the linked worktree on branch `test`; main remains at the original baseline.
 - **CONFIRMED:** GitHub repository was renamed to `AkeKy/Storefront` and local `origin` points there.
+- **CONFIRMED:** The project uses npm as its single package-manager standard. `package-lock.json` is the tracked lockfile; `pnpm-lock.yaml` is not used.
 - **CONFIRMED:** Gadget Arena is the final customer-facing brand. The site is dark by default, with a working light preference.
 - **CONFIRMED:** Catalog browsing is local-fixture backed. There is no database or product-list API wired into this repository.
 - **CONFIRMED:** The Go backend is in the separate Git repository named `project_intern1`; its source is not present in this checkout.
@@ -20,6 +21,7 @@ Build a credible portfolio storefront for gaming and IT gear under the final cus
 - Gadget Arena visual restoration while retaining the working catalog/cart/checkout systems.
 - Vitest configuration and focused test coverage for the systems above.
 - Frontend i18n through `LanguageProvider`: English default, explicit `gadget-arena-locale` browser preference, and Thai UI/category/badge/stock copy while brand and model names stay canonical.
+- Npm standardization: `npm install` and `npm run dev` are the documented setup flow, with README updated for Gadget Arena's actual customer and backend boundaries.
 
 ## Work In Progress
 
@@ -39,7 +41,7 @@ No product feature is currently being implemented. This context-recovery task is
 - **CONFIRMED:** `AppIcon.tsx` and `AppImage.tsx` still use broad `any` props. Existing build-warning design also identifies missing image-alt/static typing warnings and an `outputFileTracingRoot` workspace-root warning as cleanup work. Do not claim a warning-free build until re-run.
 - **CONFIRMED:** README and package name still say ByteForge even though visible product identity is Gadget Arena and repository is Storefront.
 - **CONFIRMED:** Legacy unused home components contain fake ratings, testimonials, US-dollar prices, or shipping claims. They are not imported by the active home page.
-- **CONFIRMED:** On 2026-08-15, `pnpm test` passed 34 tests, `pnpm type-check` passed, and `pnpm build` passed. The build still emits the pre-existing AppIcon/AppImage lint warnings and a multiple-lockfile workspace-root warning.
+- **CONFIRMED:** On 2026-08-18, `npm install`, `npm test` (34 tests), `npm run type-check`, and `npm run build` all passed in the active worktree. Build retains pre-existing AppIcon/AppImage lint warnings and also sees the old pnpm lockfile in the separate parent/main worktree; neither blocks the test branch's npm workflow.
 - **UNKNOWN:** Current `project_intern1` runtime availability, complete request schema beyond the documented order payload, and auth lifecycle cannot be verified from this repository.
 
 ## Important Constraints
@@ -75,7 +77,7 @@ See `docs/DECISIONS.md`. The continuation-critical decisions are: typed fixture 
 - **CONFIRMED:** Earlier light-first ByteForge UI was superseded by Gadget Arena restoration. Do not switch default theme or page-specific theme behavior without a new decision.
 - **CONFIRMED:** Direct catalog-to-backend integration was intentionally deferred because the required public product list/detail endpoints are not present in recoverable evidence.
 - **CONFIRMED:** Fake catalog/review/social-proof/payment content was intentionally removed from active flows; unused legacy components must not be used as a shortcut.
-- **CONFIRMED:** Moving the nested Windows worktree without dependency recreation broke absolute pnpm junctions. Do not repeat that move procedure while relying on its existing `node_modules`.
+- **CONFIRMED:** The active worktree's dependencies were converted to npm by a successful `npm install` on 2026-08-18.
 
 ## Unresolved Questions
 
@@ -85,7 +87,7 @@ See `docs/DECISIONS.md`. The continuation-critical decisions are: typed fixture 
 
 ## Next Steps
 
-1. Run the dependency-recovery command above from the active worktree.
-2. Run `pnpm test`, `pnpm type-check`, and `pnpm build`; record actual results before claiming release readiness.
+1. Remove the legacy pnpm-style `node_modules` from the active worktree and run `npm install`.
+2. Run `npm test`, `npm run type-check`, and `npm run build`; record actual results before claiming release readiness.
 3. Review the active `/`, `/products`, and `/checkout` flows and choose the next user-facing improvement.
 4. When ready for backend work, inspect `project_intern1` and create a written API contract before changing `CatalogService`.
