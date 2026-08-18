@@ -1,58 +1,53 @@
-# ByteForge Storefront
+# Gadget Arena Storefront
 
-ByteForge is a Next.js storefront for gaming peripherals, PC components, monitors, and everyday IT gear. It provides a responsive customer shopping experience while keeping the catalog boundary ready for a Go API integration.
+Gadget Arena is a bilingual Next.js storefront for gaming gear and PC accessories. It is a portfolio frontend with a browseable product catalog, stock-aware cart, and a truthful demo-first checkout.
 
-## Customer flows
+## Quick start
 
-- Browse the featured catalog on the home page.
-- Search, filter by category or brand, and sort the full product catalog.
-- Add in-stock products to a local cart, adjust quantities, and remove items.
-- Enter delivery details and complete a clearly labelled preview at checkout.
-- Keep the cart after a demo preview; a live API order is available only as an opt-in developer integration for a browser that already has an authenticated token configured.
-
-No payment is collected by the storefront.
-
-## Setup
-
-Use pnpm with the repository's existing dependencies:
+This project uses npm as its package-manager standard.
 
 ```bash
-pnpm install --frozen-lockfile
-pnpm dev
+npm install
+npm run dev
 ```
 
-The development server runs at `http://localhost:4028`.
+Open [http://localhost:4028](http://localhost:4028).
+
+## What it includes
+
+- Product catalog with search, category, brand, stock, and price filters.
+- Thai-baht pricing and factual stock availability.
+- A cart stored locally in the browser, with stock-aware quantity limits.
+- English as the default language with a persisted Thai language choice.
+- Dark mode by default with a persisted light-mode preference.
+- Demo-first checkout with delivery-detail validation; it does not collect payment.
+
+## Catalog and backend status
+
+The catalog currently uses local fixture data through a typed catalog-service boundary. This keeps the storefront functional without inventing an API that does not exist yet.
+
+The Go backend lives in the separate `project_intern1` repository. Its public product-list and product-detail contract must be defined there before the storefront can replace its fixture catalog. Checkout only sends a live order when a developer has already configured an authenticated API session in that browser; normal use remains a preview and preserves the cart.
 
 ## Environment variables
 
-| Variable | Required | Purpose |
+| Variable | Needed for | Description |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | Production | Canonical site URL used by metadata, sitemap, and robots. |
-| `NEXT_PUBLIC_API_URL` | To submit live orders | Base URL for the Go API. Checkout uses `POST /api/v1/orders`. |
+| `NEXT_PUBLIC_SITE_URL` | Production deployment | Canonical URL used by metadata, sitemap, and robots. |
+| `NEXT_PUBLIC_API_URL` | Developer-configured live order submission | Base URL for the Go API. |
 
-`NEXT_PUBLIC_API_URL` is intentionally optional. Public visitors have no login or token-entry UI, so checkout is demo-first: it completes a preview, does not submit an order, and keeps the cart unchanged. The existing order adapter becomes live only when a developer has intentionally configured both this URL and a valid `byteforge-token` in that browser's local storage. A successful live submission clears the client cart to prevent a duplicate submission on return.
-
-## Catalog fixture adapter
-
-The UI consumes `catalogService` from `src/features/catalog/catalog-service.ts`. Its current adapter uses the local fixtures in `catalog-fixtures.ts`, including categories, product details, stock levels, search, filters, and sorting. This keeps browse and cart flows usable without inventing network responses and gives the application one replacement point when a public catalog API is available.
-
-## Go API compatibility and current gap
-
-The storefront is compatible with the existing Go backend's auth, category, order, member, and admin-order capabilities. Its opt-in developer order integration maps cart items to the backend order payload (`product_id` and `amount`) and sends an authenticated request to `/api/v1/orders`. It is not a public ordering flow until the product adds customer login/token handling and a real payment/order policy.
-
-The current Go backend does **not** expose public product-list or product-detail endpoints. Therefore, the customer-facing catalog deliberately remains fixture-backed; switching it to the backend requires public product list/detail API endpoints and a mapping from their response schema to the storefront's `Product` type. The storefront does not add backend endpoints, a payment gateway, a review system, or an admin dashboard.
+`NEXT_PUBLIC_API_URL` is optional. There is no public login, token-entry, or payment interface.
 
 ## Verification
 
-Run all required checks before publishing changes:
+Run these before publishing changes:
 
 ```bash
-pnpm test
-pnpm type-check
-pnpm build
+npm test
+npm run type-check
+npm run build
 ```
 
-Also check whitespace errors before committing:
+To check whitespace before committing:
 
 ```bash
 git diff --check
