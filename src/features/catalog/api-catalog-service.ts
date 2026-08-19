@@ -80,7 +80,7 @@ const parseCategory = (value: unknown): ApiCategory => {
   const category = {
     category_id: positiveSafeInteger(value.category_id),
     category_name: requiredString(value.category_name),
-    description: typeof value.description === 'string' ? value.description : '',
+    description: requiredString(value.description),
   };
   if (!canonicalCategoryKey(category.category_name)) throw invalidResponse();
   return category;
@@ -92,7 +92,7 @@ const parseProduct = (value: unknown): ApiProduct => {
     product_id: positiveSafeInteger(value.product_id),
     slug: requiredString(value.slug),
     product_name: requiredString(value.product_name),
-    description: typeof value.description === 'string' ? value.description : '',
+    description: requiredString(value.description),
     brand: requiredString(value.brand),
     category: parseCategory(value.category),
     price: finiteNonNegativeNumber(value.price),
