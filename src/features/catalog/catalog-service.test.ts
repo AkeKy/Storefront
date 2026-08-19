@@ -21,7 +21,11 @@ const apiProducts = {
         product_name: 'API Keyboard',
         description: 'Loaded from Go',
         brand: 'Acme',
-        category: { category_id: 7, category_name: 'Keyboards' },
+        category: {
+          category_id: 7,
+          category_name: 'Keyboards',
+          description: 'Mechanical keyboards',
+        },
         price: 1990,
         stock_quantity: 3,
         image_url: '',
@@ -219,6 +223,41 @@ describe('catalogService.listProducts', () => {
     const result = await service.listProducts({ query: 'Keychron' });
 
     expect(result.products.map((product) => product.name)).toContain('Keychron Q6 Max');
+  });
+
+  it('falls back to fixture categories for a malformed category description', async () => {
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
+      jsonResponse({
+        ...apiCategories,
+        data: [{ ...apiCategories.data[0], description: '' }],
+      })
+    );
+    const service = await importConfiguredCatalog(fetcher);
+
+    const categories = await service.listCategories();
+
+    expect(categories).toContainEqual({ id: 'keyboards', name: 'Keyboards' });
+    expect(warning).toHaveBeenCalledWith('Catalog API unavailable; using demo data.');
+  });
+
+  it('falls back to fixture products for a malformed product description', async () => {
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
+      jsonResponse({
+        ...apiProducts,
+        data: {
+          ...apiProducts.data,
+          items: [{ ...apiProducts.data.items[0], description: '' }],
+        },
+      })
+    );
+    const service = await importConfiguredCatalog(fetcher);
+
+    const result = await service.listProducts({ query: 'Keychron' });
+
+    expect(result.products.map((product) => product.name)).toContain('Keychron Q6 Max');
+    expect(warning).toHaveBeenCalledWith('Catalog API unavailable; using demo data.');
   });
 
   it('falls back after the five-second API timeout', async () => {
