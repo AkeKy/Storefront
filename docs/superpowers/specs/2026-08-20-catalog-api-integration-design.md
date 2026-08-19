@@ -55,7 +55,7 @@ No credentials, cookies, or authorization headers are sent for public catalog re
 
 `GET /api/v1/categories` returns an envelope whose `data` items contain `category_id`, `category_name`, and `description`. The API adapter maps each item to `{ id, name }`.
 
-The frontend `id` is a canonical key derived from `category_name`: Unicode-normalize with NFKD, trim, lowercase, convert runs of characters other than Unicode letters or numbers to `-`, and trim surrounding hyphens. For example, `Keyboards` becomes `keyboards` and `Mouse` becomes `mouse`. The adapter caches both the in-flight category request and its resolved key-to-numeric-ID map so concurrent consumers share one lookup. The map translates a later category filter back to the backend `category_id` parameter. Product DTOs use the same canonical key derived from their nested category name.
+The frontend `id` is a canonical key derived from `category_name`: Unicode-normalize with NFKD, trim, lowercase, preserve Unicode letters, numbers, and combining marks, convert other runs to `-`, and trim surrounding hyphens. For example, `Keyboards` becomes `keyboards` and `Mouse` becomes `mouse`. The adapter caches both the in-flight category request and its resolved key-to-numeric-ID map so concurrent consumers share one lookup. The map translates a later category filter back to the backend `category_id` parameter. Product DTOs use the same canonical key derived from their nested category name.
 
 Fixture categories already use these canonical keys. This keeps category selection meaningful if one request succeeds against the API and a later request falls back to fixtures.
 
