@@ -35,3 +35,8 @@ jest-test-results.json
 # Optional: if using TurboRepo or monorepo
 turbo/
 .worktrees/
+
+# AI & Internal Docs
+.superpowers/
+docs/
+AGENTS.md
