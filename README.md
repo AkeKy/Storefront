@@ -24,18 +24,47 @@ Open [http://localhost:4028](http://localhost:4028).
 
 ## Catalog and backend status
 
-The catalog currently uses local fixture data through a typed catalog-service boundary. This keeps the storefront functional without inventing an API that does not exist yet.
+The catalog uses the public Go API when `NEXT_PUBLIC_API_URL` is configured. Missing, unavailable, or invalid API responses fall back to local fixtures so the storefront remains browseable. Catalog calls require no token; checkout remains demo-first without a developer-provided authenticated session.
 
-The Go backend lives in the separate `project_intern1` repository. Its public product-list and product-detail contract must be defined there before the storefront can replace its fixture catalog. Checkout only sends a live order when a developer has already configured an authenticated API session in that browser; normal use remains a preview and preserves the cart.
+The current phase connects the storefront to the public catalog read path. Authentication, payment, order submission, and production deployment are out of scope for this phase.
+
+### Run with the local Go API
+
+In `project_intern1/.worktrees/catalog-api`:
+
+```powershell
+Copy-Item .env.example .env
+docker compose up -d
+go run ./cmd/generate-dev-keys
+$env:DATABASE_USER = 'gadget_arena'
+$env:DATABASE_PASSWORD = 'local_app_password'
+$env:DATABASE_ADDR = '127.0.0.1'
+$env:DATABASE_DBNAME = 'gadget_arena'
+$env:DATABASE_PORT = '3307'
+$env:SERVER_PORT = '1323'
+go run .
+```
+
+The backend prerequisites are Docker MySQL, generated development keys, all documented process-local `DATABASE_*` values, and port `1323`.
+
+In the Storefront:
+
+```powershell
+Copy-Item .env.example .env.local
+npm install
+npm run dev
+```
+
+Storefront development uses npm and runs on port `4028`. `NEXT_PUBLIC_*` values are exposed to the browser and must never contain secrets. Copy `.env.example` to `.env.local` for full-stack local development. Removing `.env` from Git tracking does not remove historic values; rotate any real credentials.
 
 ## Environment variables
 
 | Variable | Needed for | Description |
 | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Production deployment | Canonical URL used by metadata, sitemap, and robots. |
-| `NEXT_PUBLIC_API_URL` | Developer-configured live order submission | Base URL for the Go API. |
+| `NEXT_PUBLIC_API_URL` | Optional public catalog API | Base URL for the Go API; use `http://localhost:1323` for the local backend. |
 
-`NEXT_PUBLIC_API_URL` is optional. There is no public login, token-entry, or payment interface.
+`NEXT_PUBLIC_API_URL` is optional. There is no public login, token-entry, or payment interface. Without a configured or available API, the catalog uses local fixtures.
 
 ## Verification
 
