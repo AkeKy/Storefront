@@ -25,6 +25,7 @@ The two sides deliberately use different data shapes. The Go API returns snake-c
 - Translate filters and response DTOs between Storefront and Go naming conventions.
 - Preserve category filtering across API and fixture modes with canonical category keys.
 - Remove the unsupported `Best rated` and `Most reviews` sort choices.
+- Stop tracking the existing local `.env` without deleting the developer's local copy; ignore all `.env*` files except the safe `.env.example` template.
 - Document local full-stack startup and environment configuration.
 - Verify the integration with unit tests, frontend checks, backend checks, and a live local Docker smoke test.
 - Push only the `test` branch in each repository; do not merge either `main` branch and do not open a pull request.
@@ -111,6 +112,15 @@ Add a tracked `.env.example` containing:
 NEXT_PUBLIC_API_URL=http://localhost:1323
 ```
 
+The repository must stop tracking the existing `.env` while leaving the local working copy intact. `.gitignore` must contain:
+
+```gitignore
+.env*
+!.env.example
+```
+
+No task may print or copy the current `.env` values. Removing the current file does not remove earlier versions from Git history, so any real credential that has ever been stored there must be rotated separately.
+
 The variable remains optional. Empty means fixture-only demo mode. A configured but unavailable API triggers automatic fixture fallback. The README must explain that `NEXT_PUBLIC_*` values are exposed to the browser and must never contain secrets.
 
 Each API request has a 5-second timeout implemented with an `AbortController`. The adapter trims surrounding whitespace and trailing slashes from the configured base URL before appending `/api/v1/...`.
@@ -144,6 +154,7 @@ Implementation follows red-green-refactor. Tests must prove:
 - Network, non-2xx, invalid JSON, and malformed DTO responses return fixture results.
 - Unsupported review-based sort options are absent from the catalog UI.
 - Existing home catalog, products page, cart, checkout, theme, and i18n tests remain green.
+- `git ls-files -- .env` returns no path, while `.env.example` remains tracked.
 
 Required final checks:
 
@@ -163,5 +174,6 @@ A live smoke test must start the Go API with the local Docker database, verify `
 - With no URL or an unavailable/malformed backend, the catalog remains usable with fixture data.
 - Filters, supported sorts, category labels, stock state, images, and cart IDs remain correct in both modes.
 - No review or rating claims are displayed.
+- The developer's local `.env` file remains on disk but is absent from Git tracking and ignored; `.env.example` contains no secret.
 - Both repositories pass their required checks.
 - Only the two `test` branches are pushed; neither `main` branch is changed.
