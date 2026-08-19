@@ -29,9 +29,10 @@ export const catalogService: CatalogService = {
           normalize(product.brand).includes(query);
         const matchesCategory = !categoryId || normalize(product.categoryId) === categoryId;
         const matchesBrand = !brand || normalize(product.brand) === brand;
+        const matchesPrice = filter.maxPrice === undefined || product.priceTHB <= filter.maxPrice;
         const matchesStock = !filter.inStockOnly || product.stockQuantity > 0;
 
-        return matchesQuery && matchesCategory && matchesBrand && matchesStock;
+        return matchesQuery && matchesCategory && matchesBrand && matchesPrice && matchesStock;
       }),
       filter.sort
     );

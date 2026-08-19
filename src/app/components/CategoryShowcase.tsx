@@ -70,13 +70,13 @@ export default function CategoryShowcase() {
                 sizes="(max-width: 640px) 50vw, 25vw"
                 className="object-cover transition-transform duration-700 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
               <div className="absolute inset-0 rounded-2xl border-2 border-transparent transition-all duration-300 group-hover:border-primary/50" />
               <div className="absolute bottom-0 left-0 right-0 p-5">
-                <p className="mb-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                <p className="mb-1 text-xs font-bold uppercase tracking-widest text-white/75">
                   {t(category.subtitleKey)}
                 </p>
-                <h3 className="text-xl font-black leading-tight text-foreground">
+                <h3 className="text-xl font-black leading-tight text-white">
                   {categoryLabel(category.id, category.name)}
                 </h3>
               </div>
