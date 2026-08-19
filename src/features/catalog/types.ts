@@ -9,7 +9,7 @@ export type Product = {
   image: string;
   imageAlt: string;
   stockQuantity: number;
-  badge?: 'New' | 'Sale' | 'Limited';
+  badge?: string;
 };
 
 export type Category = {
@@ -17,8 +17,7 @@ export type Category = {
   name: string;
 };
 
-export type CatalogSortOption =
-  'featured' | 'price-asc' | 'price-desc' | 'best-rated' | 'most-reviews';
+export type CatalogSortOption = 'featured' | 'price-asc' | 'price-desc';
 
 export type CatalogFilter = {
   query?: string;

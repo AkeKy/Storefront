@@ -40,8 +40,6 @@ export default function ProductsContent({ initialCategoryId }: ProductsContentPr
     { value: 'featured', label: t('catalog.sortFeatured') },
     { value: 'price-asc', label: t('catalog.sortPriceAsc') },
     { value: 'price-desc', label: t('catalog.sortPriceDesc') },
-    { value: 'best-rated', label: t('catalog.sortBestRated') },
-    { value: 'most-reviews', label: t('catalog.sortMostReviews') },
   ];
 
   useEffect(() => {

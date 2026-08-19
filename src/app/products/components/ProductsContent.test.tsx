@@ -76,7 +76,20 @@ describe('ProductsContent', () => {
     expect(within(filters).getByRole('button', { name: /all brands/i })).toBeInTheDocument();
     expect(within(filters).getByRole('slider', { name: /max price/i })).toBeInTheDocument();
     expect(within(filters).getByRole('checkbox', { name: /in stock only/i })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /sort by/i })).toBeInTheDocument();
+    const sortSelect = screen.getByRole('combobox', { name: /sort by/i });
+    expect(sortSelect).toBeInTheDocument();
+    expect(
+      within(sortSelect)
+        .getAllByRole('option')
+        .map((option) => ({
+          label: option.textContent,
+          value: option.getAttribute('value'),
+        }))
+    ).toEqual([
+      { label: 'Featured', value: 'featured' },
+      { label: 'Price: Low to High', value: 'price-asc' },
+      { label: 'Price: High to Low', value: 'price-desc' },
+    ]);
   });
 
   it('filters products when a customer searches by brand', async () => {
