@@ -30,7 +30,9 @@ export function StatusMessage(props: StatusMessageProps) {
 
   return (
     <section
-      className="surface-card mx-auto flex max-w-xl flex-col items-center px-6 py-12 text-center"
+      className={`mx-auto flex max-w-xl flex-col items-center px-6 py-12 text-center ${
+        props.state === 'error' ? 'surface-card' : ''
+      }`}
       role={role}
       aria-live={props.state === 'empty' ? 'polite' : undefined}
     >

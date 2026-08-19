@@ -38,16 +38,24 @@ vi.mock('@/features/catalog/catalog-service', () => ({
       { id: 'keyboards', name: 'Keyboards' },
       { id: 'mouse', name: 'Mouse' },
     ]),
-    listProducts: vi.fn().mockImplementation(({ query = '' } = {}) => {
-      const normalizedQuery = query.toLowerCase();
-      const filteredProducts = products.filter(
-        (product) =>
-          product.name.toLowerCase().includes(normalizedQuery) ||
-          product.brand.toLowerCase().includes(normalizedQuery)
-      );
+    listProducts: vi
+      .fn()
+      .mockImplementation(({ query = '', categoryId, brand, maxPrice, inStockOnly } = {}) => {
+        const normalizedQuery = query.toLowerCase();
+        const filteredProducts = products.filter((product) => {
+          const matchesQuery =
+            !query ||
+            product.name.toLowerCase().includes(normalizedQuery) ||
+            product.brand.toLowerCase().includes(normalizedQuery);
+          const matchesCategory = !categoryId || product.categoryId === categoryId;
+          const matchesBrand = !brand || product.brand === brand;
+          const matchesPrice = maxPrice === undefined || product.priceTHB <= maxPrice;
+          const matchesStock = !inStockOnly || product.stockQuantity > 0;
+          return matchesQuery && matchesCategory && matchesBrand && matchesPrice && matchesStock;
+        });
 
-      return Promise.resolve({ products: filteredProducts, total: filteredProducts.length });
-    }),
+        return Promise.resolve({ products: filteredProducts, total: filteredProducts.length });
+      }),
   },
 }));
 
@@ -64,8 +72,10 @@ describe('ProductsContent', () => {
     const filters = await screen.findByRole('complementary', { name: /filters/i });
 
     expect(screen.getByRole('searchbox', { name: /search products/i })).toBeInTheDocument();
-    expect(within(filters).getByRole('combobox', { name: /category/i })).toBeInTheDocument();
-    expect(within(filters).getByRole('combobox', { name: /brand/i })).toBeInTheDocument();
+    expect(within(filters).getByRole('button', { name: /^all$/i })).toBeInTheDocument();
+    expect(within(filters).getByRole('button', { name: /all brands/i })).toBeInTheDocument();
+    expect(within(filters).getByRole('slider', { name: /max price/i })).toBeInTheDocument();
+    expect(within(filters).getByRole('checkbox', { name: /in stock only/i })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /sort by/i })).toBeInTheDocument();
   });
 
@@ -89,6 +99,52 @@ describe('ProductsContent', () => {
     });
   });
 
+  it('filters products by selecting a category pill', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <LanguageProvider>
+        <CartProvider>
+          <ProductsContent initialCategoryId={undefined} />
+        </CartProvider>
+      </LanguageProvider>
+    );
+
+    await screen.findByText('Razer DeathAdder V3');
+    const mousePill = await screen.findByRole('button', { name: 'Mouse' });
+    await user.click(mousePill);
+
+    expect(await screen.findByText('Razer DeathAdder V3')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText('Keychron Q6 Max')).not.toBeInTheDocument();
+    });
+  });
+
+  it('resets all filters when clicking Reset All', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <LanguageProvider>
+        <CartProvider>
+          <ProductsContent initialCategoryId={undefined} />
+        </CartProvider>
+      </LanguageProvider>
+    );
+
+    await screen.findByText('Razer DeathAdder V3');
+    await user.type(screen.getByRole('searchbox', { name: /search products/i }), 'Keychron');
+
+    await waitFor(() => {
+      expect(screen.queryByText('Razer DeathAdder V3')).not.toBeInTheDocument();
+    });
+
+    const resetButton = screen.getByRole('button', { name: /reset all/i });
+    await user.click(resetButton);
+
+    expect(await screen.findByText('Razer DeathAdder V3')).toBeInTheDocument();
+    expect(await screen.findByText('Keychron Q6 Max')).toBeInTheDocument();
+  });
+
   it('keeps brand options available after a search has no matches', async () => {
     const user = userEvent.setup();
 
@@ -104,7 +160,7 @@ describe('ProductsContent', () => {
     await user.type(screen.getByRole('searchbox', { name: /search products/i }), 'not-a-product');
 
     await screen.findByRole('heading', { name: /no products found/i });
-    expect(screen.getByRole('option', { name: 'Razer' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Razer' })).toBeInTheDocument();
   });
 
   it('translates catalog labels and categories without changing model names', async () => {
@@ -119,7 +175,7 @@ describe('ProductsContent', () => {
     );
 
     expect(await screen.findByRole('heading', { name: 'สินค้าทั้งหมด' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'คีย์บอร์ด' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'คีย์บอร์ด' })).toBeInTheDocument();
     expect(screen.getByText('Keychron Q6 Max')).toBeInTheDocument();
   });
 });

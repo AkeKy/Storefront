@@ -17,11 +17,15 @@ export type Category = {
   name: string;
 };
 
+export type CatalogSortOption =
+  'featured' | 'price-asc' | 'price-desc' | 'best-rated' | 'most-reviews';
+
 export type CatalogFilter = {
   query?: string;
   categoryId?: string;
   brand?: string;
-  sort?: 'featured' | 'price-asc' | 'price-desc';
+  maxPrice?: number;
+  sort?: CatalogSortOption;
   inStockOnly?: boolean;
 };
 

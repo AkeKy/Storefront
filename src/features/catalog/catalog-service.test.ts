@@ -29,6 +29,22 @@ describe('catalogService.listProducts', () => {
     ]);
   });
 
+  it('filters products below or equal to maxPrice', async () => {
+    const result = await catalogService.listProducts({
+      maxPrice: 5000,
+    });
+
+    expect(result.products.map((product) => product.name)).toEqual(
+      expect.arrayContaining([
+        'Logitech G Pro X Superlight 2',
+        'HyperX Cloud III',
+        'Samsung 990 EVO Plus 1TB',
+      ])
+    );
+    expect(result.products.map((product) => product.name)).not.toContain('Keychron Q6 Max');
+    expect(result.products.every((product) => product.priceTHB <= 5000)).toBe(true);
+  });
+
   it('returns deterministic categories', async () => {
     await expect(catalogService.listCategories()).resolves.toEqual(
       expect.arrayContaining([
