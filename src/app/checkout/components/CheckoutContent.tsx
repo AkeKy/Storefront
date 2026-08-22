@@ -1,626 +1,306 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import AppImage from '@/components/ui/AppImage';
 import Icon from '@/components/ui/AppIcon';
+import { useCart } from '@/features/cart/CartContext';
+import { useLanguage, type MessageKey } from '@/features/i18n/LanguageContext';
+import { createOrder, type OrderSubmissionResult } from '@/features/orders/order-service';
 
-interface CartItem {
-  id: number;
-  name: string;
-  brand: string;
-  price: number;
-  quantity: number;
-  image: string;
-  alt: string;
+const currency = new Intl.NumberFormat('th-TH', {
+  style: 'currency',
+  currency: 'THB',
+  maximumFractionDigits: 0,
+});
+export type DeliveryForm = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  province: string;
+  postalCode: string;
+  phone: string;
+};
+type DeliveryErrorCode =
+  'validation.required' | 'validation.email' | 'validation.postalCode' | 'validation.phone';
+type DeliveryErrors = Partial<Record<keyof DeliveryForm, DeliveryErrorCode>>;
+
+const initialForm: DeliveryForm = {
+  email: '',
+  firstName: '',
+  lastName: '',
+  address: '',
+  city: '',
+  province: '',
+  postalCode: '',
+  phone: '',
+};
+const requiredFields: Array<keyof DeliveryForm> = [
+  'email',
+  'firstName',
+  'lastName',
+  'address',
+  'city',
+  'province',
+  'postalCode',
+  'phone',
+];
+const fieldMeta: Record<
+  keyof DeliveryForm,
+  {
+    labelKey: MessageKey;
+    type?: 'email' | 'tel' | 'text';
+    autoComplete: string;
+    inputMode?: 'numeric' | 'tel';
+  }
+> = {
+  email: { labelKey: 'checkout.email', type: 'email', autoComplete: 'email' },
+  firstName: { labelKey: 'checkout.firstName', autoComplete: 'given-name' },
+  lastName: { labelKey: 'checkout.lastName', autoComplete: 'family-name' },
+  address: { labelKey: 'checkout.address', autoComplete: 'street-address' },
+  city: { labelKey: 'checkout.city', autoComplete: 'address-level2' },
+  province: { labelKey: 'checkout.province', autoComplete: 'address-level1' },
+  postalCode: {
+    labelKey: 'checkout.postalCode',
+    autoComplete: 'postal-code',
+    inputMode: 'numeric',
+  },
+  phone: { labelKey: 'checkout.phone', type: 'tel', autoComplete: 'tel', inputMode: 'tel' },
+};
+
+export function validateDeliveryForm(form: DeliveryForm): DeliveryErrors {
+  const errors: DeliveryErrors = {};
+  requiredFields.forEach((field) => {
+    if (!form[field].trim()) errors[field] = 'validation.required';
+  });
+  if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
+    errors.email = 'validation.email';
+  if (form.postalCode.trim() && !/^\d{5}$/.test(form.postalCode.trim()))
+    errors.postalCode = 'validation.postalCode';
+  const phoneDigits = form.phone.replace(/[\s-]/g, '');
+  if (form.phone.trim() && !/^0\d{8,9}$/.test(phoneDigits)) errors.phone = 'validation.phone';
+  return errors;
 }
 
-const cartItems: CartItem[] = [
-  {
-    id: 1,
-    name: 'Razer DeathAdder V3 Pro',
-    brand: 'Razer',
-    price: 149.99,
-    quantity: 1,
-    image: 'https://images.unsplash.com/photo-1666102710819-7c1387125d40',
-    alt: 'Black ergonomic gaming mouse on dark surface',
-  },
-  {
-    id: 2,
-    name: 'SteelSeries Apex Pro TKL',
-    brand: 'SteelSeries',
-    price: 179.99,
-    quantity: 1,
-    image: 'https://img.rocket.new/generatedImages/rocket_gen_img_1faeefae7-1772850001582.png',
-    alt: 'TKL mechanical keyboard with RGB lighting',
-  },
-  {
-    id: 3,
-    name: 'HyperX Cloud III Wireless',
-    brand: 'HyperX',
-    price: 199.99,
-    quantity: 1,
-    image: 'https://img.rocket.new/generatedImages/rocket_gen_img_1af022901-1772850004857.png',
-    alt: 'Wireless gaming headset with cushioned ear cups',
-  },
-];
+export default function CheckoutContent() {
+  const { items, itemCount, subtotalTHB, updateQuantity, removeItem, clearCart } = useCart();
+  const { t } = useLanguage();
+  const [form, setForm] = useState(initialForm);
+  const [reviewing, setReviewing] = useState(false);
+  const [errors, setErrors] = useState<DeliveryErrors>({});
+  const [submissionError, setSubmissionError] = useState('');
+  const [result, setResult] = useState<OrderSubmissionResult>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const hasValidationError = Object.values(errors).some(Boolean);
 
-type PaymentMethod = 'card' | 'paypal' | 'crypto';
-type Step = 'shipping' | 'payment' | 'confirm';
-
-const CheckoutContent: React.FC = () => {
-  const [quantities, setQuantities] = useState<Record<number, number>>(
-    Object.fromEntries(cartItems.map((item) => [item.id, item.quantity]))
-  );
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
-  const [step, setStep] = useState<Step>('shipping');
-  const [orderPlaced, setOrderPlaced] = useState(false);
-
-  // Form state
-  const [form, setForm] = useState({
-    email: '',
-    firstName: '',
-    lastName: '',
-    address: '',
-    city: '',
-    state: '',
-    zip: '',
-    country: 'United States',
-    phone: '',
-    cardNumber: '',
-    cardName: '',
-    cardExpiry: '',
-    cardCvv: '',
-    saveInfo: false,
-    sameAsBilling: true,
-  });
-
-  const updateField = (key: keyof typeof form, value: string | boolean) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+  const updateField = (key: keyof DeliveryForm, value: string) => {
+    setForm((current) => ({ ...current, [key]: value }));
+    setErrors((current) => ({ ...current, [key]: undefined }));
+  };
+  const reviewOrder = () => {
+    const nextErrors = validateDeliveryForm(form);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length === 0) setReviewing(true);
+  };
+  const submitOrder = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setSubmissionError('');
+    try {
+      const token = window.localStorage.getItem('byteforge-token') ?? undefined;
+      const nextResult = await createOrder(items, token);
+      if (nextResult.mode === 'submitted') clearCart();
+      setResult(nextResult);
+    } catch (error) {
+      setSubmissionError(error instanceof Error ? error.message : t('catalog.loadError'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * (quantities[item.id] || 1),
-    0
-  );
-  const shipping = subtotal > 75 ? 0 : 9.99;
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
-
-  const updateQty = (id: number, delta: number) => {
-    setQuantities((prev) => ({ ...prev, [id]: Math.max(1, (prev[id] || 1) + delta) }));
-  };
-
-  const handlePlaceOrder = () => {
-    setOrderPlaced(true);
-  };
-
-  if (orderPlaced) {
+  if (result) {
     return (
-      <div className="pt-24 min-h-screen flex items-center justify-center px-6">
-        <div className="text-center max-w-md">
-          <div className="w-20 h-20 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-6 neon-glow">
-            <Icon name="CheckIcon" size={36} className="text-primary" />
-          </div>
-          <h2 className="text-display-md mb-4">
-            ORDER <span className="gradient-text-primary">CONFIRMED</span>
-          </h2>
-          <p className="text-muted-foreground mb-2 text-base">
-            Your order #GA-{Math.floor(Math.random() * 90000) + 10000} has been placed.
+      <div className="flex min-h-screen items-center justify-center px-6 pt-24">
+        <div className="max-w-md text-center">
+          <Icon name="CheckIcon" size={40} className="mx-auto mb-5 text-primary" />
+          <h1 className="text-display-md">
+            {result.mode === 'demo' ? t('checkout.previewComplete') : t('checkout.orderConfirmed')}
+          </h1>
+          <p className="mt-4 text-muted-foreground">
+            {result.mode === 'demo' ? t('checkout.previewResult') : t('checkout.submittedResult')}
           </p>
-          <p className="text-muted-foreground text-sm mb-8">
-            Estimated delivery: <span className="text-foreground font-bold">Aug 7–8, 2026</span>
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/" className="btn-primary text-sm py-3 px-6">
-              Back to Home
-              <Icon name="HomeIcon" size={16} />
-            </Link>
-            <Link href="/products" className="btn-outline text-sm py-3 px-6">
-              Keep Shopping
-              <Icon name="ArrowRightIcon" size={16} />
-            </Link>
-          </div>
+          <Link href="/products" className="btn-primary mt-8">
+            {t('checkout.continueShopping')}
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="pt-24 pb-16 px-6 max-w-screen-xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <Link
-          href="/products"
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm font-medium mb-4"
-        >
-          <Icon name="ArrowLeftIcon" size={16} />
-          Continue Shopping
-        </Link>
-        <h1 className="text-display-md">
-          CHECK<span className="gradient-text-primary">OUT</span>
-        </h1>
-      </div>
-
-      {/* Steps indicator */}
-      <div className="flex items-center gap-2 mb-10">
-        {(['shipping', 'payment', 'confirm'] as Step[]).map((s, i) => (
-          <React.Fragment key={s}>
-            <button
-              onClick={() => {
-                if (s === 'shipping') setStep('shipping');
-                if (s === 'payment' && step === 'confirm') setStep('payment');
-              }}
-              className={`flex items-center gap-2 text-sm font-bold transition-colors ${step === s ? 'text-primary' : i < (['shipping', 'payment', 'confirm'] as Step[]).indexOf(step) ? 'text-foreground' : 'text-muted-foreground'}`}
+    <div className="mx-auto max-w-screen-xl px-6 pb-16 pt-28">
+      <Link href="/products" className="text-sm font-semibold text-primary hover:underline">
+        ← {t('checkout.continueShopping')}
+      </Link>
+      <h1 className="mt-4 text-display-md">{t('checkout.title')}</h1>
+      <p className="mt-3 max-w-3xl text-sm text-muted-foreground">{t('checkout.demoNotice')}</p>
+      <div className="mt-8 grid gap-8 lg:grid-cols-5">
+        <section className="surface-card p-6 lg:col-span-3">
+          <h2 className="text-xl font-bold">{t('checkout.deliveryDetails')}</h2>
+          {hasValidationError && (
+            <p
+              role="alert"
+              className="mt-4 rounded-lg border border-destructive p-3 text-sm text-destructive"
             >
-              <span
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all ${step === s ? 'bg-primary text-primary-foreground neon-glow' : 'border border-border'}`}
-              >
-                {i + 1}
-              </span>
-              <span className="capitalize hidden sm:block">{s}</span>
-            </button>
-            {i < 2 && <div className="flex-1 h-px bg-border max-w-[60px]" />}
-          </React.Fragment>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        {/* Left: Forms */}
-        <div className="lg:col-span-3 flex flex-col gap-6">
-          {/* Shipping Step */}
-          {step === 'shipping' && (
-            <div className="card-dark p-6">
-              <h2 className="font-black text-lg text-foreground mb-5 flex items-center gap-2">
-                <Icon name="MapPinIcon" size={20} className="text-primary" />
-                Shipping Information
-              </h2>
-              <div className="flex flex-col gap-4">
-                <input
-                  type="email"
-                  placeholder="Email address"
-                  value={form.email}
-                  onChange={(e) => updateField('email', e.target.value)}
-                  className="checkout-input"
-                />
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <input
-                    placeholder="First name"
-                    value={form.firstName}
-                    onChange={(e) => updateField('firstName', e.target.value)}
-                    className="checkout-input"
-                  />
-
-                  <input
-                    placeholder="Last name"
-                    value={form.lastName}
-                    onChange={(e) => updateField('lastName', e.target.value)}
-                    className="checkout-input"
-                  />
-                </div>
-                <input
-                  placeholder="Street address"
-                  value={form.address}
-                  onChange={(e) => updateField('address', e.target.value)}
-                  className="checkout-input"
-                />
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  <input
-                    placeholder="City"
-                    value={form.city}
-                    onChange={(e) => updateField('city', e.target.value)}
-                    className="checkout-input"
-                  />
-
-                  <input
-                    placeholder="State"
-                    value={form.state}
-                    onChange={(e) => updateField('state', e.target.value)}
-                    className="checkout-input"
-                  />
-
-                  <input
-                    placeholder="ZIP code"
-                    value={form.zip}
-                    onChange={(e) => updateField('zip', e.target.value)}
-                    className="checkout-input col-span-2 sm:col-span-1"
-                  />
-                </div>
-                <input
-                  placeholder="Phone number"
-                  value={form.phone}
-                  onChange={(e) => updateField('phone', e.target.value)}
-                  className="checkout-input"
-                />
-
-                {/* Shipping options */}
-                <div className="mt-2">
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
-                    Shipping Method
-                  </p>
-                  <div className="flex flex-col gap-2">
-                    {[
-                      {
-                        label: 'Standard Shipping',
-                        time: '3–5 business days',
-                        price: subtotal > 75 ? 'Free' : '$9.99',
-                      },
-                      { label: 'Express Shipping', time: '1–2 business days', price: '$19.99' },
-                      { label: 'Same-Day Delivery', time: 'Order before 3PM', price: '$29.99' },
-                    ].map((option, i) => (
-                      <label
-                        key={option.label}
-                        className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${i === 0 ? 'border-primary/50 bg-primary/5' : 'border-border hover:border-muted-foreground'}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${i === 0 ? 'border-primary' : 'border-muted-foreground'}`}
-                          >
-                            {i === 0 && <div className="w-2 h-2 rounded-full bg-primary" />}
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-foreground">{option.label}</p>
-                            <p className="text-xs text-muted-foreground">{option.time}</p>
-                          </div>
-                        </div>
-                        <span
-                          className={`text-sm font-bold ${i === 0 ? 'text-primary' : 'text-foreground'}`}
-                        >
-                          {option.price}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setStep('payment')}
-                  className="btn-primary w-full justify-center py-4 mt-2"
+              {t('checkout.validationSummary')}
+            </p>
+          )}
+          {reviewing ? (
+            <div className="mt-6">
+              <h3 className="font-bold">{t('checkout.reviewTitle')}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {form.firstName} {form.lastName}, {form.address}, {form.city}, {form.province}{' '}
+                {form.postalCode}
+              </p>
+              <p className="mt-3 text-sm text-muted-foreground">{t('checkout.reviewNotice')}</p>
+              {submissionError && (
+                <div
+                  role="alert"
+                  className="mt-4 rounded-lg border border-destructive p-3 text-sm text-destructive"
                 >
-                  Continue to Payment
-                  <Icon name="ArrowRightIcon" size={16} />
+                  {submissionError}
+                  <button
+                    className="ml-3 font-bold underline"
+                    onClick={submitOrder}
+                    disabled={isSubmitting}
+                  >
+                    {t('checkout.retry')}
+                  </button>
+                </div>
+              )}
+              <div className="mt-6 flex gap-3">
+                <button
+                  className="btn-outline"
+                  onClick={() => setReviewing(false)}
+                  disabled={isSubmitting}
+                >
+                  {t('checkout.editDetails')}
+                </button>
+                <button
+                  className="btn-primary"
+                  onClick={submitOrder}
+                  disabled={items.length === 0 || isSubmitting}
+                >
+                  {isSubmitting
+                    ? t('checkout.submitting')
+                    : t('checkout.submitOrder', { total: currency.format(subtotalTHB) })}
                 </button>
               </div>
             </div>
-          )}
-
-          {/* Payment Step */}
-          {step === 'payment' && (
-            <div className="card-dark p-6">
-              <h2 className="font-black text-lg text-foreground mb-5 flex items-center gap-2">
-                <Icon name="CreditCardIcon" size={20} className="text-primary" />
-                Payment Method
-              </h2>
-
-              {/* Method Tabs */}
-              <div className="flex gap-2 mb-5">
-                {(
-                  [
-                    { key: 'card', icon: 'CreditCardIcon', label: 'Card' },
-                    { key: 'paypal', icon: 'GlobeAltIcon', label: 'PayPal' },
-                    { key: 'crypto', icon: 'BoltIcon', label: 'Crypto' },
-                  ] as { key: PaymentMethod; icon: string; label: string }[]
-                ).map((m) => (
-                  <button
-                    key={m.key}
-                    onClick={() => setPaymentMethod(m.key)}
-                    className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${
-                      paymentMethod === m.key
-                        ? 'bg-primary/15 border border-primary/40 text-primary'
-                        : 'border border-border text-muted-foreground hover:border-muted-foreground'
-                    }`}
-                  >
-                    <Icon name={m.icon as any} size={16} />
-                    {m.label}
-                  </button>
-                ))}
-              </div>
-
-              {paymentMethod === 'card' && (
-                <div className="flex flex-col gap-4">
-                  <div>
-                    <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">
-                      Card Number
-                    </label>
-                    <input
-                      placeholder="1234 5678 9012 3456"
-                      value={form.cardNumber}
-                      onChange={(e) => updateField('cardNumber', e.target.value)}
-                      className="checkout-input"
-                      maxLength={19}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">
-                      Name on Card
-                    </label>
-                    <input
-                      placeholder="Full name"
-                      value={form.cardName}
-                      onChange={(e) => updateField('cardName', e.target.value)}
-                      className="checkout-input"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">
-                        Expiry
-                      </label>
+          ) : (
+            <>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                {requiredFields.map((key) => {
+                  const meta = fieldMeta[key];
+                  const error = errors[key];
+                  const errorId = `checkout-${key}-error`;
+                  return (
+                    <label key={key} className={key === 'address' ? 'sm:col-span-2' : ''}>
+                      <span className="mb-1 block text-sm font-semibold">{t(meta.labelKey)}</span>
                       <input
-                        placeholder="MM / YY"
-                        value={form.cardExpiry}
-                        onChange={(e) => updateField('cardExpiry', e.target.value)}
-                        className="checkout-input"
-                        maxLength={7}
+                        className="checkout-input w-full"
+                        type={meta.type ?? 'text'}
+                        autoComplete={meta.autoComplete}
+                        inputMode={meta.inputMode}
+                        aria-invalid={Boolean(error)}
+                        aria-describedby={error ? errorId : undefined}
+                        value={form[key]}
+                        onChange={(event) => updateField(key, event.target.value)}
                       />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">
-                        CVV
-                      </label>
-                      <input
-                        placeholder="•••"
-                        value={form.cardCvv}
-                        onChange={(e) => updateField('cardCvv', e.target.value)}
-                        className="checkout-input"
-                        maxLength={4}
-                        type="password"
-                      />
-                    </div>
-                  </div>
-                  <label className="flex items-center gap-3 cursor-pointer mt-1">
-                    <div
-                      onClick={() => updateField('saveInfo', !form.saveInfo)}
-                      className={`w-10 h-5 rounded-full transition-all relative flex-shrink-0 ${form.saveInfo ? 'bg-primary' : 'bg-muted'}`}
-                    >
-                      <span
-                        className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${form.saveInfo ? 'left-5' : 'left-0.5'}`}
-                      />
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      Save payment info for next time
-                    </span>
-                  </label>
-                </div>
-              )}
-
-              {paymentMethod === 'paypal' && (
-                <div className="text-center py-10 border border-border rounded-xl">
-                  <Icon name="GlobeAltIcon" size={40} className="text-blue-400 mx-auto mb-3" />
-                  <p className="text-foreground font-bold mb-2">Connect with PayPal</p>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    You&apos;ll be redirected to PayPal to complete payment.
-                  </p>
-                  <button className="btn-outline text-sm py-3 px-6">Connect PayPal</button>
-                </div>
-              )}
-
-              {paymentMethod === 'crypto' && (
-                <div className="text-center py-10 border border-border rounded-xl">
-                  <Icon
-                    name="BoltIcon"
-                    size={40}
-                    variant="solid"
-                    className="text-yellow-400 mx-auto mb-3"
-                  />
-                  <p className="text-foreground font-bold mb-2">Pay with Crypto</p>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    Accepts BTC, ETH, USDC. 2% discount applied.
-                  </p>
-                  <button className="btn-outline text-sm py-3 px-6">Generate Wallet Address</button>
-                </div>
-              )}
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setStep('shipping')}
-                  className="btn-outline py-3 px-5 text-sm"
-                >
-                  <Icon name="ArrowLeftIcon" size={14} />
-                  Back
-                </button>
-                <button
-                  onClick={() => setStep('confirm')}
-                  className="btn-primary flex-1 justify-center py-3 text-sm"
-                >
-                  Review Order
-                  <Icon name="ArrowRightIcon" size={14} />
-                </button>
+                      {error && (
+                        <p id={errorId} role="alert" className="mt-1 text-sm text-destructive">
+                          {t(error)}
+                        </p>
+                      )}
+                    </label>
+                  );
+                })}
               </div>
-            </div>
+              <button className="btn-primary mt-6 w-full justify-center" onClick={reviewOrder}>
+                {t('checkout.reviewOrder')}
+              </button>
+            </>
           )}
-
-          {/* Confirm Step */}
-          {step === 'confirm' && (
-            <div className="card-dark p-6">
-              <h2 className="font-black text-lg text-foreground mb-5 flex items-center gap-2">
-                <Icon name="ClipboardDocumentCheckIcon" size={20} className="text-primary" />
-                Review & Confirm
-              </h2>
-
-              {/* Shipping summary */}
-              <div className="mb-5 p-4 bg-muted rounded-xl border border-border">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                    Shipping To
-                  </p>
-                  <button
-                    onClick={() => setStep('shipping')}
-                    className="text-xs text-primary font-bold hover:underline"
-                  >
-                    Edit
-                  </button>
-                </div>
-                <p className="text-sm font-bold text-foreground">
-                  {form.firstName || 'Jordan'} {form.lastName || 'Lee'}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {form.address || '4821 Oak Street'}, {form.city || 'Austin'}, {form.state || 'TX'}{' '}
-                  {form.zip || '78701'}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {form.email || 'jordan.lee@email.com'}
-                </p>
-              </div>
-
-              {/* Payment summary */}
-              <div className="mb-5 p-4 bg-muted rounded-xl border border-border">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                    Payment
-                  </p>
-                  <button
-                    onClick={() => setStep('payment')}
-                    className="text-xs text-primary font-bold hover:underline"
-                  >
-                    Edit
-                  </button>
-                </div>
-                <p className="text-sm font-bold text-foreground capitalize">
-                  {paymentMethod === 'card'
-                    ? `Card ending in ${form.cardNumber ? form.cardNumber.slice(-4) : '3456'}`
-                    : paymentMethod === 'paypal'
-                      ? 'PayPal'
-                      : 'Cryptocurrency'}
-                </p>
-              </div>
-
-              {/* Security note */}
-              <div className="flex items-center gap-2 p-3 bg-primary/5 border border-primary/20 rounded-xl mb-5">
-                <Icon name="ShieldCheckIcon" size={16} className="text-primary flex-shrink-0" />
-                <p className="text-xs text-muted-foreground">
-                  Your payment is encrypted with 256-bit SSL. We never store card details.
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setStep('payment')}
-                  className="btn-outline py-3 px-5 text-sm"
-                >
-                  <Icon name="ArrowLeftIcon" size={14} />
-                  Back
-                </button>
-                <button
-                  onClick={handlePlaceOrder}
-                  className="btn-primary flex-1 justify-center py-4 text-sm neon-glow"
-                >
-                  <Icon name="LockClosedIcon" size={14} />
-                  Place Order · ${total.toFixed(2)}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right: Order Summary */}
-        <div className="lg:col-span-2">
-          <div className="card-dark p-6 sticky top-24">
-            <h2 className="font-black text-base text-foreground mb-5 flex items-center gap-2">
-              <Icon name="ShoppingCartIcon" size={18} className="text-primary" />
-              Order Summary
-              <span className="ml-auto tag-neon text-[10px]">{cartItems.length} items</span>
-            </h2>
-
-            {/* Cart Items */}
-            <div className="flex flex-col gap-4 mb-5">
-              {cartItems.map((item) => (
-                <div key={item.id} className="flex gap-3">
-                  <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+        </section>
+        <aside className="surface-card h-fit p-6 lg:col-span-2">
+          <h2 className="text-xl font-bold">
+            {t('checkout.orderSummary')}{' '}
+            <span className="text-sm text-muted-foreground">({itemCount})</span>
+          </h2>
+          {items.length === 0 ? (
+            <p className="mt-4 text-muted-foreground">{t('checkout.emptyCart')}</p>
+          ) : (
+            <div className="mt-5 space-y-4">
+              {items.map((item) => (
+                <div key={item.product.id} className="flex gap-3">
+                  <div className="relative h-16 w-16 overflow-hidden rounded bg-muted">
                     <AppImage
-                      src={item.image}
-                      alt={item.alt}
+                      src={item.product.image}
+                      alt={item.product.imageAlt}
                       fill
                       sizes="64px"
                       className="object-cover"
                     />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-foreground leading-tight truncate">
-                      {item.name}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold">{item.product.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {currency.format(item.product.priceTHB)}
                     </p>
-                    <p className="text-xs text-muted-foreground mb-1.5">{item.brand}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1 border border-border rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => updateQty(item.id, -1)}
-                          className="px-2 py-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-xs"
-                        >
-                          −
-                        </button>
-                        <span className="px-2 text-xs font-bold text-foreground">
-                          {quantities[item.id] || 1}
-                        </span>
-                        <button
-                          onClick={() => updateQty(item.id, 1)}
-                          className="px-2 py-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-all text-xs"
-                        >
-                          +
-                        </button>
-                      </div>
-                      <span className="text-sm font-black text-primary">
-                        ${(item.price * (quantities[item.id] || 1)).toFixed(2)}
-                      </span>
+                    <div className="mt-2 flex items-center gap-2">
+                      <button
+                        aria-label={t('checkout.decreaseQuantity', { name: item.product.name })}
+                        onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                        disabled={isSubmitting}
+                      >
+                        −
+                      </button>
+                      <span>{item.quantity}</span>
+                      <button
+                        aria-label={t('checkout.increaseQuantity', { name: item.product.name })}
+                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                        disabled={isSubmitting}
+                      >
+                        +
+                      </button>
+                      <button
+                        className="ml-auto text-sm text-destructive"
+                        onClick={() => removeItem(item.product.id)}
+                        disabled={isSubmitting}
+                      >
+                        {t('checkout.remove')}
+                      </button>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-
-            <div className="border-t border-border pt-4 flex flex-col gap-2.5">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="text-foreground font-semibold">${subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Shipping</span>
-                <span
-                  className={
-                    shipping === 0 ? 'text-primary font-bold' : 'text-foreground font-semibold'
-                  }
-                >
-                  {shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Tax (8%)</span>
-                <span className="text-foreground font-semibold">${tax.toFixed(2)}</span>
-              </div>
-              <div className="border-t border-border pt-3 mt-1 flex justify-between">
-                <span className="font-black text-foreground text-base">Total</span>
-                <span className="font-black text-primary text-xl">${total.toFixed(2)}</span>
-              </div>
-            </div>
-
-            {/* Promo code */}
-            <div className="mt-4 flex gap-2">
-              <input placeholder="Promo code" className="checkout-input flex-1 text-sm py-2.5" />
-
-              <button className="btn-outline py-2.5 px-4 text-sm">Apply</button>
-            </div>
-
-            {/* Trust badges */}
-            <div className="mt-4 flex items-center justify-center gap-4 pt-4 border-t border-border">
-              {[
-                { icon: 'ShieldCheckIcon', label: 'Secure' },
-                { icon: 'TruckIcon', label: 'Fast Ship' },
-                { icon: 'ArrowPathIcon', label: '30-Day Returns' },
-              ].map((badge) => (
-                <div key={badge.label} className="flex flex-col items-center gap-1">
-                  <Icon name={badge.icon as any} size={16} className="text-primary" />
-                  <span className="text-[10px] text-muted-foreground font-medium">
-                    {badge.label}
-                  </span>
-                </div>
-              ))}
-            </div>
+          )}
+          <div className="mt-6 space-y-2 border-t pt-4 text-sm">
+            <p className="flex justify-between">
+              <span>{t('checkout.subtotal')}</span>
+              <span>{currency.format(subtotalTHB)}</span>
+            </p>
+            <p className="flex justify-between text-lg font-bold">
+              <span>{t('checkout.total')}</span>
+              <span>{currency.format(subtotalTHB)}</span>
+            </p>
           </div>
-        </div>
+          <p className="mt-4 text-xs text-muted-foreground">{t('checkout.deliveryUnavailable')}</p>
+        </aside>
       </div>
     </div>
   );
-};
-
-export default CheckoutContent;
+}

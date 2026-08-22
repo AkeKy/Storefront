@@ -5,7 +5,7 @@ import CheckoutContent from '@/app/checkout/components/CheckoutContent';
 export default function CheckoutPage() {
   return (
     <main className="bg-background min-h-screen">
-      <Header cartCount={3} />
+      <Header />
       <CheckoutContent />
     </main>
   );

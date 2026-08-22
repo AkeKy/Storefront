@@ -33,7 +33,7 @@ const featuredProducts: Product[] = [
     alt: 'Black gaming mouse with ergonomic design on dark surface with subtle RGB lighting',
     tag: 'Best Seller',
     tagType: 'neon',
-    category: 'Mice',
+    category: 'Mouse',
   },
   {
     id: 2,

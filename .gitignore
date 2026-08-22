@@ -1,6 +1,9 @@
 # Node modules
 node_modules/
-package-lock.json
+
+# Local environment files
+.env*
+!.env.example
 
 # Next.js build output
 .next/
@@ -37,8 +40,7 @@ jest-test-results.json
 turbo/
 .worktrees/
 
-# Environment variables
-.env
-.env.local
-
+# AI & Internal Docs
+.superpowers/
 docs/
+AGENTS.md
