@@ -159,9 +159,7 @@ describe('catalogService.listProducts', () => {
     expect(fetcher).toHaveBeenCalledTimes(2);
 
     const productsUrl = new URL(String(fetcher.mock.calls[1]?.[0]));
-    expect(productsUrl.origin + productsUrl.pathname).toBe(
-      'http://localhost:1323/api/v1/products'
-    );
+    expect(productsUrl.origin + productsUrl.pathname).toBe('http://localhost:1323/api/v1/products');
     expect(Object.fromEntries(productsUrl.searchParams)).toEqual({
       page: '1',
       limit: '100',
