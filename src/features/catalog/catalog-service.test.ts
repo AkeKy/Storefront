@@ -21,11 +21,7 @@ const apiProducts = {
         product_name: 'API Keyboard',
         description: 'Loaded from Go',
         brand: 'Acme',
-        category: {
-          category_id: 7,
-          category_name: 'Keyboards',
-          description: 'Mechanical keyboards',
-        },
+        category: { category_id: 7, category_name: 'Keyboards' },
         price: 1990,
         stock_quantity: 3,
         image_url: '',
@@ -116,6 +112,7 @@ describe('catalogService.listProducts', () => {
   });
 
   it('maps the configured Go API and translates every supported filter', async () => {
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const fetcher = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(apiCategories))
@@ -156,6 +153,7 @@ describe('catalogService.listProducts', () => {
       ],
       total: 1,
     });
+    expect(warning).not.toHaveBeenCalled();
     expect(fetcher).toHaveBeenCalledTimes(2);
 
     const productsUrl = new URL(String(fetcher.mock.calls[1]?.[0]));
@@ -172,10 +170,24 @@ describe('catalogService.listProducts', () => {
     });
     expect(fetcher.mock.calls[1]?.[1]).toMatchObject({
       headers: { Accept: 'application/json' },
+      credentials: 'omit',
     });
     const requestInit = fetcher.mock.calls[1]?.[1];
-    expect(requestInit).not.toHaveProperty('credentials');
     expect(new Headers(requestInit?.headers).has('Authorization')).toBe(false);
+  });
+
+  it('omits credentials on catalog API requests', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse(apiCategories));
+    const service = await importConfiguredCatalog(fetcher);
+
+    await service.listCategories();
+
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(fetcher.mock.calls[0]?.[1]).toMatchObject({
+      headers: { Accept: 'application/json' },
+      credentials: 'omit',
+    });
+    expect(new Headers(fetcher.mock.calls[0]?.[1]?.headers).has('Authorization')).toBe(false);
   });
 
   it('uses fixtures without a network request when the API URL is absent', async () => {
@@ -221,41 +233,6 @@ describe('catalogService.listProducts', () => {
     const result = await service.listProducts({ query: 'Keychron' });
 
     expect(result.products.map((product) => product.name)).toContain('Keychron Q6 Max');
-  });
-
-  it('falls back to fixture categories for a malformed category description', async () => {
-    const warning = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
-      jsonResponse({
-        ...apiCategories,
-        data: [{ ...apiCategories.data[0], description: '' }],
-      })
-    );
-    const service = await importConfiguredCatalog(fetcher);
-
-    const categories = await service.listCategories();
-
-    expect(categories).toContainEqual({ id: 'keyboards', name: 'Keyboards' });
-    expect(warning).toHaveBeenCalledWith('Catalog API unavailable; using demo data.');
-  });
-
-  it('falls back to fixture products for a malformed product description', async () => {
-    const warning = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
-      jsonResponse({
-        ...apiProducts,
-        data: {
-          ...apiProducts.data,
-          items: [{ ...apiProducts.data.items[0], description: '' }],
-        },
-      })
-    );
-    const service = await importConfiguredCatalog(fetcher);
-
-    const result = await service.listProducts({ query: 'Keychron' });
-
-    expect(result.products.map((product) => product.name)).toContain('Keychron Q6 Max');
-    expect(warning).toHaveBeenCalledWith('Catalog API unavailable; using demo data.');
   });
 
   it('falls back after the five-second API timeout', async () => {

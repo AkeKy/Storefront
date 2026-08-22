@@ -7,13 +7,11 @@ type Fetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Respons
 type ApiCategory = {
   category_id: number;
   category_name: string;
-  description: string;
 };
 type ApiProduct = {
   product_id: number;
   slug: string;
   product_name: string;
-  description: string;
   brand: string;
   category: ApiCategory;
   price: number;
@@ -80,7 +78,6 @@ const parseCategory = (value: unknown): ApiCategory => {
   const category = {
     category_id: positiveSafeInteger(value.category_id),
     category_name: requiredString(value.category_name),
-    description: requiredString(value.description),
   };
   if (!canonicalCategoryKey(category.category_name)) throw invalidResponse();
   return category;
@@ -92,7 +89,6 @@ const parseProduct = (value: unknown): ApiProduct => {
     product_id: positiveSafeInteger(value.product_id),
     slug: requiredString(value.slug),
     product_name: requiredString(value.product_name),
-    description: requiredString(value.description),
     brand: requiredString(value.brand),
     category: parseCategory(value.category),
     price: finiteNonNegativeNumber(value.price),
@@ -145,6 +141,7 @@ export function createApiCatalogService(
     try {
       const response = await fetcher(baseUrl + path, {
         headers: { Accept: 'application/json' },
+        credentials: 'omit',
         signal: controller.signal,
       });
       if (!response.ok) throw new Error('Catalog request failed.');
