@@ -230,9 +230,7 @@ export function createApiCatalogService(
         params.set('category_id', String(selectedId));
       }
 
-      const data = parseProductList(
-        await requestData('/api/v1/products?' + params.toString())
-      );
+      const data = parseProductList(await requestData('/api/v1/products?' + params.toString()));
       return { products: data.items.map(mapProduct), total: data.total };
     },
   };

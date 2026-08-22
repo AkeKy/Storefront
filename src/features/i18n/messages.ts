@@ -216,7 +216,8 @@ export const messages = {
     'checkout.remove': 'ลบ',
     'checkout.subtotal': 'ยอดรวมสินค้า',
     'checkout.total': 'รวมทั้งหมด',
-    'checkout.deliveryUnavailable': 'โหมดทดลอง: ยังไม่มีการคำนวณค่าจัดส่ง และไม่มีการเรียกเก็บเงินจริง',
+    'checkout.deliveryUnavailable':
+      'โหมดทดลอง: ยังไม่มีการคำนวณค่าจัดส่ง และไม่มีการเรียกเก็บเงินจริง',
     'checkout.previewComplete': 'สร้างตัวอย่างคำสั่งซื้อเรียบร้อย',
     'checkout.orderConfirmed': 'ยืนยันคำสั่งซื้อแล้ว',
     'checkout.previewResult':
