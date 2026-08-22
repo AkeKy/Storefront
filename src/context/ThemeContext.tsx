@@ -18,26 +18,22 @@ export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>('dark');
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem('gadgetarena-theme') as Theme | null;
-    const initial = stored ?? 'dark';
-    setTheme(initial);
-    document.documentElement.classList.toggle('light', initial === 'light');
-    setMounted(true);
+    document.documentElement.classList.toggle('light', theme === 'light');
+  }, [theme]);
+
+  useEffect(() => {
+    if (localStorage.getItem('byteforge-theme') === 'light') setTheme('light');
   }, []);
 
   const toggleTheme = () => {
     setTheme((prev) => {
       const next: Theme = prev === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('gadgetarena-theme', next);
-      document.documentElement.classList.toggle('light', next === 'light');
+      localStorage.setItem('byteforge-theme', next);
       return next;
     });
   };
-
-  if (!mounted) return <>{children}</>;
 
   return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
 };

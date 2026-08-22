@@ -3,6 +3,8 @@ import type { Metadata, Viewport } from 'next';
 import { DM_Sans } from 'next/font/google';
 import '../styles/tailwind.css';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { CartProvider } from '@/features/cart/CartContext';
+import { LanguageProvider } from '@/features/i18n/LanguageContext';
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -18,15 +20,16 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-  title: 'GadgetArena — Gaming Gear & IT Tech Shop',
+  applicationName: 'Gadget Arena',
+  title: 'Gadget Arena — Gaming Gear & IT Tech Shop',
   description:
-    'GadgetArena is the ultimate destination for gamers and tech enthusiasts — shop top gaming peripherals, GPUs, monitors, headsets, and IT gear with fast US shipping.',
+    'Gadget Arena is a practical destination for gaming peripherals, GPUs, monitors, headsets, and IT gear.',
   icons: {
-    icon: [{ url: '/favicon.ico', type: 'image/x-icon' }],
+    icon: [{ url: '/assets/favicon.ico', type: 'image/x-icon' }],
   },
   openGraph: {
-    title: 'GadgetArena — Gaming Gear',
-    description: 'Shop top gaming peripherals, GPUs, and IT gear.',
+    title: 'Gadget Arena — Gaming Gear',
+    description: 'Shop gaming peripherals, GPUs, and IT gear.',
     images: [{ url: '/assets/images/app_logo.png', width: 1200, height: 630 }],
   },
 };
@@ -39,14 +42,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={dmSans.variable}>
       <body className={dmSans.className}>
-        <ThemeProvider>{children}</ThemeProvider>
-
-        <script
-          type="module"
-          async
-          src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fgadgetaren6716back.builtwithrocket.new&_be=https%3A%2F%2Fappanalytics.rocket.new&_v=0.1.20"
-        />
-        <script type="module" defer src="https://static.rocket.new/rocket-shot.js?v=0.0.2" />
+        <LanguageProvider>
+          <ThemeProvider>
+            <CartProvider>{children}</CartProvider>
+          </ThemeProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

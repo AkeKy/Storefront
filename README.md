@@ -1,88 +1,83 @@
-# Shopping Frontend
+# Gadget Arena Storefront
 
-A modern Next.js 15 application built with TypeScript and Tailwind CSS.
+Gadget Arena is a bilingual Next.js storefront for gaming gear and PC accessories. It is a portfolio frontend with a browseable product catalog, stock-aware cart, and a truthful demo-first checkout.
 
-## 🚀 Features
+## Quick start
 
-- **Next.js 15** - Latest version with improved performance and features
-- **React 19** - Latest React version with enhanced capabilities
-- **Tailwind CSS** - Utility-first CSS framework for rapid UI development
+This project uses npm as its package-manager standard.
 
-## 🛠️ Installation
-
-1. Install dependencies:
-  ```bash
-  npm install
-  # or
-  yarn install
-  ```
-
-2. Start the development server:
-  ```bash
-  npm run dev
-  # or
-  yarn dev
-  ```
-3. Open [http://localhost:4028](http://localhost:4028) with your browser to see the result.
-
-## 📁 Project Structure
-
-```
-shopping-frontend/
-├── public/             # Static assets
-├── src/
-│   ├── app/            # App router components
-│   │   ├── layout.tsx  # Root layout component
-│   │   └── page.tsx    # Main page component
-│   ├── components/     # Reusable UI components
-│   ├── styles/         # Global styles and Tailwind configuration
-├── next.config.mjs     # Next.js configuration
-├── package.json        # Project dependencies and scripts
-├── postcss.config.js   # PostCSS configuration
-└── tailwind.config.js  # Tailwind CSS configuration
-
+```bash
+npm install
+npm run dev
 ```
 
-## 🧩 Page Editing
+Open [http://localhost:4028](http://localhost:4028).
 
-You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
+## What it includes
 
-## 🎨 Styling
+- Product catalog with search, category, brand, stock, and price filters.
+- Thai-baht pricing and factual stock availability.
+- A cart stored locally in the browser, with stock-aware quantity limits.
+- English as the default language with a persisted Thai language choice.
+- Dark mode by default with a persisted light-mode preference.
+- Demo-first checkout with delivery-detail validation; it does not collect payment.
 
-This project uses Tailwind CSS for styling with the following features:
-- Utility-first approach for rapid development
-- Custom theme configuration
-- Responsive design utilities
-- PostCSS and Autoprefixer integration
+## Catalog and backend status
 
-## 📦 Available Scripts
+The catalog uses the public Go API when `NEXT_PUBLIC_API_URL` is configured. Missing, unavailable, or invalid API responses fall back to local fixtures so the storefront remains browseable. Catalog calls require no token; checkout remains demo-first without a developer-provided authenticated session.
 
-- `npm run dev` - Start development server on port 4028
-- `npm run build` - Build the application for production
-- `npm run start` - Start the development server
-- `npm run serve` - Start the production server
-- `npm run lint` - Run ESLint to check code quality
-- `npm run lint:fix` - Fix ESLint issues automatically
-- `npm run format` - Format code with Prettier
+The current phase connects the storefront to the public catalog read path. Authentication, payment, order submission, and production deployment are out of scope for this phase.
 
-## 📱 Deployment
+### Run with the local Go API
 
-Build the application for production:
+In `project_intern1/.worktrees/catalog-api`:
 
-  ```bash
-  npm run build
-  ```
+```powershell
+Copy-Item .env.example .env
+docker compose up -d
+go run ./cmd/generate-dev-keys
+$env:DATABASE_USER = 'gadget_arena'
+$env:DATABASE_PASSWORD = 'local_app_password'
+$env:DATABASE_ADDR = '127.0.0.1'
+$env:DATABASE_DBNAME = 'gadget_arena'
+$env:DATABASE_PORT = '3307'
+$env:SERVER_PORT = '1323'
+go run .
+```
 
-## 📚 Learn More
+The backend prerequisites are Docker MySQL, generated development keys, all documented process-local `DATABASE_*` values, and port `1323`.
 
-To learn more about Next.js, take a look at the following resources:
+In the Storefront:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial
+```powershell
+Copy-Item .env.example .env.local
+npm install
+npm run dev
+```
 
-You can check out the [Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Storefront development uses npm and runs on port `4028`. `NEXT_PUBLIC_*` values are exposed to the browser and must never contain secrets. Copy `.env.example` to `.env.local` for full-stack local development. Removing `.env` from Git tracking does not remove historic values; rotate any real credentials.
 
-## 🙏 Acknowledgments
+## Environment variables
 
-- Powered by Next.js and React
-- Styled with Tailwind CSS
+| Variable | Needed for | Description |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | Production deployment | Canonical URL used by metadata, sitemap, and robots. |
+| `NEXT_PUBLIC_API_URL` | Optional public catalog API | Base URL for the Go API; use `http://localhost:1323` for the local backend. |
+
+`NEXT_PUBLIC_API_URL` is optional. There is no public login, token-entry, or payment interface. Without a configured or available API, the catalog uses local fixtures.
+
+## Verification
+
+Run these before publishing changes:
+
+```bash
+npm test
+npm run type-check
+npm run build
+```
+
+To check whitespace before committing:
+
+```bash
+git diff --check
+```
