@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage, type MessageKey } from '@/features/i18n/LanguageContext';
 import type { RegistrationData } from '@/features/auth/types';
+import { validateRegistration } from '@/features/auth/registration-validation';
 
 type FormState = RegistrationData & { confirmPassword: string };
 type FormErrors = Partial<Record<keyof FormState, MessageKey>>;
@@ -74,11 +75,10 @@ export default function RegisterForm() {
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (submitting) return;
-    const nextErrors: FormErrors = {};
-    for (const [name, value] of Object.entries(form) as Array<[keyof FormState, string]>) {
-      if (!value.trim()) nextErrors[name] = 'validation.required';
-    }
-    if (form.password && form.confirmPassword && form.password !== form.confirmPassword)
+    const { confirmPassword, ...registration } = form;
+    const nextErrors: FormErrors = validateRegistration(registration);
+    if (!confirmPassword.trim()) nextErrors.confirmPassword = 'validation.required';
+    if (form.password && confirmPassword && form.password !== confirmPassword)
       nextErrors.confirmPassword = 'auth.passwordMismatch';
     setErrors(nextErrors);
     setSubmissionError(undefined);
@@ -90,7 +90,6 @@ export default function RegisterForm() {
 
     setSubmitting(true);
     try {
-      const { confirmPassword: _confirmPassword, ...registration } = form;
       const result = await register(registration);
       if (result.ok) router.replace('/login');
       else setSubmissionError(errorKey(result.error));

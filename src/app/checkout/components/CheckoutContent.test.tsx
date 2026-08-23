@@ -105,9 +105,12 @@ it('accepts delivery details with a valid Thai mobile number', () => {
   ).toEqual({});
 });
 
-it('clears the cart after a configured API order succeeds', async () => {
+it('keeps checkout demo-only without reading or passing a legacy browser token', async () => {
   window.localStorage.setItem('byteforge-cart', JSON.stringify([{ product, quantity: 1 }]));
-  createOrderMock.mockResolvedValue({ mode: 'submitted' });
+  window.localStorage.setItem('byteforge-token', 'legacy-local-token');
+  window.sessionStorage.setItem('byteforge-token', 'legacy-session-token');
+  const getItem = vi.spyOn(Storage.prototype, 'getItem');
+  createOrderMock.mockResolvedValue({ mode: 'demo' });
   const user = userEvent.setup();
   renderCheckout();
 
@@ -123,9 +126,13 @@ it('clears the cart after a configured API order succeeds', async () => {
   await user.click(screen.getByRole('button', { name: /review order/i }));
   await user.click(await screen.findByRole('button', { name: /submit order/i }));
 
-  expect(await screen.findByText(/your cart has been cleared/i)).toBeInTheDocument();
+  expect(await screen.findByText(/your cart is unchanged/i)).toBeInTheDocument();
+  expect(createOrderMock).toHaveBeenCalledWith();
+  expect(getItem).not.toHaveBeenCalledWith('byteforge-token');
   await waitFor(() =>
-    expect(JSON.parse(window.localStorage.getItem('byteforge-cart') ?? 'null')).toEqual([])
+    expect(JSON.parse(window.localStorage.getItem('byteforge-cart') ?? 'null')).toEqual([
+      { product, quantity: 1 },
+    ])
   );
 });
 
@@ -155,9 +162,9 @@ it('keeps a stored cart after a demo checkout preview', async () => {
   );
 });
 
-it('prevents duplicate submissions while an order request is pending', async () => {
+it('prevents duplicate demo previews while the request is pending', async () => {
   window.localStorage.setItem('byteforge-cart', JSON.stringify([{ product, quantity: 1 }]));
-  let resolveOrder: (result: { mode: 'submitted' }) => void;
+  let resolveOrder: (result: { mode: 'demo' }) => void;
   createOrderMock.mockImplementation(
     () =>
       new Promise((resolve) => {
@@ -176,8 +183,8 @@ it('prevents duplicate submissions while an order request is pending', async () 
   expect(submitOrder).toBeDisabled();
   expect(screen.getByText(/submitting order/i)).toBeInTheDocument();
 
-  resolveOrder!({ mode: 'submitted' });
-  expect(await screen.findByText(/your cart has been cleared/i)).toBeInTheDocument();
+  resolveOrder!({ mode: 'demo' });
+  expect(await screen.findByText(/your cart is unchanged/i)).toBeInTheDocument();
 });
 
 it('shows the item subtotal as the checkout total without a delivery quote', async () => {
