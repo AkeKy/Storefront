@@ -60,7 +60,7 @@ const Header: React.FC = () => {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 px-6 py-5 flex items-center justify-between ${
+        className={`fixed top-0 left-0 w-full z-50 flex items-center gap-4 px-6 py-5 transition-all duration-500 ${
           scrolled ? 'nav-scrolled' : 'bg-transparent'
         }`}
       >
@@ -73,7 +73,7 @@ const Header: React.FC = () => {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden xl:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+        <div className="hidden shrink-0 items-center gap-4 xl:flex xl:mx-4 2xl:gap-8">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -86,7 +86,7 @@ const Header: React.FC = () => {
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-3">
+        <div className="ml-auto flex shrink-0 items-center gap-2 xl:gap-3">
           <LanguageToggle />
 
           {/* Theme Toggle */}
