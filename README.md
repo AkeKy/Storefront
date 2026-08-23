@@ -26,11 +26,11 @@ Open [http://localhost:4028](http://localhost:4028).
 
 The catalog uses the public Go API when `NEXT_PUBLIC_API_URL` is configured. Missing, unavailable, or invalid API responses fall back to local fixtures so the storefront remains browseable. Catalog calls require no token; checkout remains demo-first without a developer-provided authenticated session.
 
-The current phase connects the storefront to the public catalog read path. Authentication, payment, order submission, and production deployment are out of scope for this phase.
+The Storefront includes `/login` and `/register` plus same-origin BFF routes for register, login, session, and logout. Payment and production deployment remain outside this documentation scope.
 
 ### Run with the local Go API
 
-In `project_intern1/.worktrees/catalog-api`:
+In the `project_intern1` backend repository:
 
 ```powershell
 Copy-Item .env.example .env
@@ -64,7 +64,7 @@ Storefront development uses npm and runs on port `4028`. `NEXT_PUBLIC_*` values 
 | `NEXT_PUBLIC_SITE_URL` | Production deployment | Canonical URL used by metadata, sitemap, and robots. |
 | `NEXT_PUBLIC_API_URL` | Optional public catalog API | Base URL for the Go API; use `http://localhost:1323` for the local backend. |
 
-`NEXT_PUBLIC_API_URL` is optional. There is no public login, token-entry, or payment interface. Without a configured or available API, the catalog uses local fixtures.
+`NEXT_PUBLIC_API_URL` is optional. Authentication uses the BFF session boundary, never developer token entry. Without a configured or available catalog API, the catalog uses local fixtures.
 
 ## Verification
 
