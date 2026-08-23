@@ -86,22 +86,35 @@ const errorFor = (status: number, mode: 'login' | 'register'): AuthActionError =
   return 'unavailable';
 };
 
+const purgeLegacyBrowserToken = () => {
+  for (const storage of [window.localStorage, window.sessionStorage]) {
+    try {
+      storage.removeItem('byteforge-token');
+    } catch {
+      // A restricted storage area must not prevent session restoration.
+    }
+  }
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('loading');
   const [user, setUser] = useState<SessionUser>();
   const mounted = useRef(false);
   const sessionRequest = useRef<AbortController | undefined>(undefined);
+  const loginRequest = useRef<AbortController | undefined>(undefined);
   const generation = useRef(0);
 
-  const invalidateSessionRequest = useCallback(() => {
+  const invalidateAuthRequests = useCallback(() => {
     generation.current += 1;
     sessionRequest.current?.abort();
     sessionRequest.current = undefined;
+    loginRequest.current?.abort();
+    loginRequest.current = undefined;
     return generation.current;
   }, []);
 
   const refresh = useCallback(async () => {
-    const requestGeneration = invalidateSessionRequest();
+    const requestGeneration = invalidateAuthRequests();
     const controller = new AbortController();
     sessionRequest.current = controller;
     try {
@@ -121,40 +134,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       if (sessionRequest.current === controller) sessionRequest.current = undefined;
     }
-  }, [invalidateSessionRequest]);
+  }, [invalidateAuthRequests]);
 
   useEffect(() => {
     mounted.current = true;
+    purgeLegacyBrowserToken();
     void refresh();
     return () => {
       mounted.current = false;
-      invalidateSessionRequest();
+      invalidateAuthRequests();
     };
-  }, [invalidateSessionRequest, refresh]);
+  }, [invalidateAuthRequests, refresh]);
 
   const login = useCallback(
     async (credentials: LoginCredentials): Promise<AuthActionResult> => {
-      const requestGeneration = invalidateSessionRequest();
+      const fallbackUser = user;
+      const fallbackStatus: AuthStatus =
+        status === 'authenticated' && fallbackUser ? 'authenticated' : 'anonymous';
+      const requestGeneration = invalidateAuthRequests();
+      const controller = new AbortController();
+      loginRequest.current = controller;
+
+      const reconcileFailedLogin = () => {
+        if (!mounted.current || requestGeneration !== generation.current) return false;
+        setUser(fallbackStatus === 'authenticated' ? fallbackUser : undefined);
+        setStatus(fallbackStatus);
+        return true;
+      };
+
       try {
         const response = await fetch('/api/auth/login', {
           method: 'POST',
           credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(credentials),
+          signal: controller.signal,
         });
         const body = (await readJson(response)) as PublicSessionResponse | undefined;
         const nextUser = response.ok ? parseSessionUser(body?.user) : undefined;
         if (!mounted.current || requestGeneration !== generation.current)
           return { ok: false, error: 'unavailable' };
-        if (!nextUser) return { ok: false, error: errorFor(response.status, 'login') };
+        if (!nextUser) {
+          reconcileFailedLogin();
+          return { ok: false, error: errorFor(response.status, 'login') };
+        }
         setUser(nextUser);
         setStatus('authenticated');
         return { ok: true };
       } catch {
+        reconcileFailedLogin();
         return { ok: false, error: 'unavailable' };
+      } finally {
+        if (loginRequest.current === controller) loginRequest.current = undefined;
       }
     },
-    [invalidateSessionRequest]
+    [invalidateAuthRequests, status, user]
   );
 
   const register = useCallback(
@@ -177,7 +211,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    invalidateSessionRequest();
+    invalidateAuthRequests();
     if (mounted.current) {
       setUser(undefined);
       setStatus('anonymous');
@@ -187,7 +221,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Logout must remove the local session view even if the network is unavailable.
     }
-  }, [invalidateSessionRequest]);
+  }, [invalidateAuthRequests]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

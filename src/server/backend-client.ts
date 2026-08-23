@@ -64,10 +64,13 @@ const parseEnvelope = async (response: Response): Promise<BackendEnvelope> => {
   try {
     body = await response.json();
   } catch {
-    throw new BackendError(response.status || 502, 'invalid_response', 'Invalid backend response.');
+    throw new BackendError(502, 'invalid_response', 'Invalid backend response.');
   }
   if (!isBackendEnvelope(body)) {
-    throw new BackendError(response.status || 502, 'invalid_response', 'Invalid backend response.');
+    throw new BackendError(502, 'invalid_response', 'Invalid backend response.');
+  }
+  if (body.status !== response.status) {
+    throw new BackendError(502, 'invalid_response', 'Invalid backend response.');
   }
   return body;
 };

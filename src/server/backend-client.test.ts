@@ -61,6 +61,44 @@ describe('backendRequest', () => {
     );
   });
 
+  it('rejects a response whose HTTP and envelope statuses disagree', async () => {
+    vi.stubEnv('BACKEND_API_URL', 'https://api.example.test');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            status: 400,
+            code: 'invalid_request',
+            message: 'Submitted data is invalid',
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        )
+      )
+    );
+
+    await expect(backendRequest('/api/v1/register')).rejects.toEqual(
+      new BackendError(502, 'invalid_response', 'Invalid backend response.')
+    );
+  });
+
+  it('maps malformed successful responses to a safe gateway error', async () => {
+    vi.stubEnv('BACKEND_API_URL', 'https://api.example.test');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>().mockResolvedValue(
+        new Response('not-json', {
+          status: 200,
+          headers: { 'Content-Type': 'text/plain' },
+        })
+      )
+    );
+
+    await expect(backendRequest('/api/v1/me')).rejects.toEqual(
+      new BackendError(502, 'invalid_response', 'Invalid backend response.')
+    );
+  });
+
   it('aborts an unfinished backend request after five seconds', async () => {
     vi.useFakeTimers();
     vi.stubEnv('BACKEND_API_URL', 'https://api.example.test');

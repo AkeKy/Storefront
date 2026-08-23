@@ -42,6 +42,11 @@ export const messages = {
     'auth.invalidRequest': 'Please check your details and try again.',
     'auth.unavailable': 'We could not complete that request. Please try again.',
     'auth.passwordMismatch': 'Passwords do not match.',
+    'auth.invalidPhone': 'Enter a 10-digit Thai phone number.',
+    'auth.invalidBirthDate': 'Enter a valid birth date.',
+    'auth.minimumAge': 'You must be at least 7 years old.',
+    'auth.passwordTooShort': 'Use at least 12 characters.',
+    'auth.passwordTooLong': 'Use no more than 72 UTF-8 bytes.',
     'home.delivery.title': 'Delivery',
     'home.delivery.description':
       'Delivery quotes are unavailable in this demo. Checkout shows the item subtotal only, and no payment is collected.',
@@ -112,7 +117,7 @@ export const messages = {
     'checkout.reviewOrder': 'Review order',
     'checkout.reviewTitle': 'Review your order',
     'checkout.reviewNotice':
-      'This normally completes a demo preview. It only submits a live order when a developer-configured authenticated API session is already available in this browser.',
+      'This completes a demo preview only. No backend order or payment will be submitted.',
     'checkout.retry': 'Retry',
     'checkout.editDetails': 'Edit details',
     'checkout.submitOrder': 'Submit order · {{total}}',
@@ -185,6 +190,11 @@ export const messages = {
     'auth.invalidRequest': 'โปรดตรวจสอบข้อมูลแล้วลองใหม่อีกครั้ง',
     'auth.unavailable': 'ไม่สามารถดำเนินการตามคำขอได้ โปรดลองใหม่อีกครั้ง',
     'auth.passwordMismatch': 'รหัสผ่านไม่ตรงกัน',
+    'auth.invalidPhone': 'กรอกเบอร์โทรศัพท์ไทย 10 หลัก',
+    'auth.invalidBirthDate': 'กรอกวันเกิดให้ถูกต้อง',
+    'auth.minimumAge': 'ผู้สมัครต้องมีอายุอย่างน้อย 7 ปี',
+    'auth.passwordTooShort': 'ใช้รหัสผ่านอย่างน้อย 12 ตัวอักษร',
+    'auth.passwordTooLong': 'ใช้รหัสผ่านไม่เกิน 72 ไบต์ UTF-8',
     'home.delivery.title': 'การจัดส่งสินค้า',
     'home.delivery.description':
       'ระบบนี้เป็นโหมดทดลอง (Demo) จึงยังไม่มีการคิดค่าจัดส่ง โดยหน้าสั่งซื้อจะแสดงเฉพาะยอดรวมของสินค้าเท่านั้น',

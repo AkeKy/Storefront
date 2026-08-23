@@ -19,7 +19,10 @@ const renderForm = () =>
   );
 
 describe('RegisterForm', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    window.localStorage.clear();
+  });
 
   it('submits exactly the public member registration fields', async () => {
     mocks.register.mockResolvedValue({ ok: true });
@@ -61,6 +64,23 @@ describe('RegisterForm', () => {
       'aria-describedby',
       'register-username-error'
     );
+  });
+
+  it('blocks submission and focuses backend-incompatible registration data', async () => {
+    mocks.register.mockResolvedValue({ ok: true });
+    const user = userEvent.setup();
+    renderForm();
+    await completeRegistration(user);
+    const email = screen.getByLabelText('Email address');
+    await user.clear(email);
+    await user.type(email, 'buyer.example.test');
+
+    await user.click(screen.getByRole('button', { name: 'Create account' }));
+
+    expect(mocks.register).not.toHaveBeenCalled();
+    expect(email).toHaveFocus();
+    expect(email).toHaveAttribute('aria-describedby', 'register-email-error');
+    expect(screen.getByText('Enter a valid email address.')).toBeInTheDocument();
   });
 
   it('announces registration submission while the request is pending', async () => {

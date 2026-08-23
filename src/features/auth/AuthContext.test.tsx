@@ -41,9 +41,31 @@ describe('AuthProvider', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn());
     window.localStorage.clear();
+    window.sessionStorage.clear();
   });
 
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it('purges legacy browser tokens without reading their values', async () => {
+    window.localStorage.setItem('byteforge-token', 'legacy-local-token');
+    window.sessionStorage.setItem('byteforge-token', 'legacy-session-token');
+    const getItem = vi.spyOn(Storage.prototype, 'getItem');
+    vi.mocked(fetch).mockResolvedValueOnce(response({ code: 'unauthorized' }, 401));
+
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>
+    );
+
+    expect(await screen.findByTestId('status')).toHaveTextContent('anonymous');
+    expect(getItem).not.toHaveBeenCalledWith('byteforge-token');
+    expect(window.localStorage.getItem('byteforge-token')).toBeNull();
+    expect(window.sessionStorage.getItem('byteforge-token')).toBeNull();
+  });
 
   it('restores a validated session without storing a token in browser storage', async () => {
     const setItem = vi.spyOn(Storage.prototype, 'setItem');
@@ -70,7 +92,7 @@ describe('AuthProvider', () => {
       </AuthProvider>
     );
 
-    expect(await screen.findByTestId('status')).toHaveTextContent('anonymous');
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('anonymous'));
     expect(screen.getByTestId('user')).toHaveTextContent('none');
   });
 
@@ -99,6 +121,109 @@ describe('AuthProvider', () => {
       })
     );
     expect(setItem.mock.calls.flat().join(' ')).not.toMatch(/token/i);
+  });
+
+  it('becomes anonymous when login fails after cancelling pending session restoration', async () => {
+    const mountSession = deferred<Response>();
+    vi.mocked(fetch)
+      .mockReturnValueOnce(mountSession.promise)
+      .mockResolvedValueOnce(response({ code: 'invalid_credentials' }, 401));
+
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>
+    );
+    expect(screen.getByTestId('status')).toHaveTextContent('loading');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Login' }));
+
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('anonymous'));
+    expect(screen.getByTestId('user')).toHaveTextContent('none');
+  });
+
+  it('becomes anonymous when login has a network error after cancelling restoration', async () => {
+    const mountSession = deferred<Response>();
+    vi.mocked(fetch)
+      .mockReturnValueOnce(mountSession.promise)
+      .mockRejectedValueOnce(new Error('offline'));
+
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Login' }));
+
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('anonymous'));
+    expect(screen.getByTestId('user')).toHaveTextContent('none');
+  });
+
+  it('preserves an authenticated user when a replacement login is rejected', async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(response({ user: validUser }))
+      .mockResolvedValueOnce(response({ code: 'invalid_credentials' }, 401));
+
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>
+    );
+    await screen.findByText('authenticated');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Login' }));
+
+    expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
+    expect(screen.getByTestId('user')).toHaveTextContent('buyer');
+  });
+
+  it('aborts a pending login when logout starts', async () => {
+    let loginSignal: AbortSignal | undefined;
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(response({ code: 'unauthorized' }, 401))
+      .mockImplementationOnce((_input, init) => {
+        loginSignal = init?.signal ?? undefined;
+        return new Promise<Response>(() => undefined);
+      })
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>
+    );
+    await screen.findByText('anonymous');
+    await userEvent.click(screen.getByRole('button', { name: 'Login' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Logout' }));
+
+    expect(loginSignal?.aborted).toBe(true);
+    expect(screen.getByTestId('status')).toHaveTextContent('anonymous');
+  });
+
+  it('ignores a stale successful login response after logout', async () => {
+    const pendingLogin = deferred<Response>();
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(response({ code: 'unauthorized' }, 401))
+      .mockReturnValueOnce(pendingLogin.promise)
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>
+    );
+    await screen.findByText('anonymous');
+    await userEvent.click(screen.getByRole('button', { name: 'Login' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Logout' }));
+
+    await act(async () => {
+      pendingLogin.resolve(response({ user: validUser, expiresAt: 1_800_000_000 }));
+      await Promise.resolve();
+    });
+
+    expect(screen.getByTestId('status')).toHaveTextContent('anonymous');
+    expect(screen.getByTestId('user')).toHaveTextContent('none');
   });
 
   it('clears the local user after logout even when the network request fails', async () => {
