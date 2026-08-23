@@ -14,14 +14,25 @@ const hasForbiddenCharacter = (value: string) =>
     return character === '\\' || code <= 0x1f || code === 0x7f;
   });
 
-const fullyDecode = (value: string): string | undefined => {
-  let decoded = value;
-  for (let index = 0; index < 8; index += 1) {
-    if (hasForbiddenCharacter(decoded)) return undefined;
+const INTERNAL_RETURN_TO_BASE = new URL('https://gadget-arena.invalid/');
+const MAX_RETURN_TO_DECODES = 8;
+
+const isStrictInternalPath = (value: string) =>
+  value.startsWith('/') && !value.startsWith('//') && !hasForbiddenCharacter(value);
+
+const canonicalInternalPath = (returnTo: string): string | undefined => {
+  let candidate = returnTo;
+  for (let index = 0; index < MAX_RETURN_TO_DECODES; index += 1) {
+    if (!isStrictInternalPath(candidate)) return undefined;
     try {
-      const next = decodeURIComponent(decoded);
-      if (next === decoded) return decoded;
-      decoded = next;
+      const destination = new URL(candidate, INTERNAL_RETURN_TO_BASE);
+      if (destination.origin !== INTERNAL_RETURN_TO_BASE.origin) return undefined;
+      const canonical = `${destination.pathname}${destination.search}${destination.hash}`;
+      if (!isStrictInternalPath(canonical)) return undefined;
+
+      const decoded = decodeURIComponent(candidate);
+      if (decoded === candidate) return canonical;
+      candidate = decoded;
     } catch {
       return undefined;
     }
@@ -30,22 +41,8 @@ const fullyDecode = (value: string): string | undefined => {
 };
 
 export const safeReturnTo = (returnTo?: string) => {
-  if (
-    !returnTo ||
-    hasForbiddenCharacter(returnTo) ||
-    !returnTo.startsWith('/') ||
-    returnTo.startsWith('//')
-  )
-    return '/';
-  const decoded = fullyDecode(returnTo);
-  if (!decoded || !decoded.startsWith('/') || decoded.startsWith('//')) return '/';
-  try {
-    const destination = new URL(returnTo, window.location.origin);
-    if (destination.origin !== window.location.origin) return '/';
-    return `${destination.pathname}${destination.search}${destination.hash}`;
-  } catch {
-    return '/';
-  }
+  if (!returnTo || !isStrictInternalPath(returnTo)) return '/';
+  return canonicalInternalPath(returnTo) ?? '/';
 };
 
 const errorKey = (error: string): MessageKey => {

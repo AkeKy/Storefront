@@ -80,6 +80,17 @@ describe('LoginForm', () => {
     expect(mocks.replace).toHaveBeenCalledWith('/checkout');
   });
 
+  it('preserves a safe internal query and hash after login', async () => {
+    mocks.login.mockResolvedValue({ ok: true });
+    const user = userEvent.setup();
+    renderForm('/checkout?step=review#summary');
+
+    await user.type(screen.getByLabelText('Username'), 'buyer');
+    await user.type(screen.getByLabelText('Password'), 'password');
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+    expect(mocks.replace).toHaveBeenCalledWith('/checkout?step=review#summary');
+  });
+
   it.each([
     ['protocol-relative path', '//attacker.example.test'],
     ['raw carriage return', '/checkout\r//attacker.example.test'],
@@ -90,6 +101,11 @@ describe('LoginForm', () => {
     ['raw backslash', '/\\attacker.example.test'],
     ['encoded backslash', '/%5cattacker.example.test'],
     ['absolute scheme after normalization', '/%2f%2fattacker.example.test'],
+    ['encoded dot segment then protocol-relative path', '/%2e%2e//attacker.example.test'],
+    ['double-encoded dot and slash segments', '/%252e%252e%252f%252fattacker.example.test'],
+    ['encoded dot segment and backslash', '/%2e%2e%5cattacker.example.test'],
+    ['double-encoded carriage return', '/checkout%250d%250a//attacker.example.test'],
+    ['double-encoded backslash', '/%255cattacker.example.test'],
   ])('rejects %s as a return target', async (_name, returnTo) => {
     mocks.login.mockResolvedValue({ ok: true });
     const user = userEvent.setup();

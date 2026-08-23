@@ -36,6 +36,9 @@ describe('Header', () => {
     );
 
     expect(screen.getByRole('link', { name: 'Products' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Products' }).parentElement).not.toHaveClass(
+      'absolute'
+    );
     expect((await screen.findByRole('link', { name: 'Sign in' })).parentElement).toHaveClass(
       'hidden',
       'xl:flex'
