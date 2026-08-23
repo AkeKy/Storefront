@@ -73,7 +73,7 @@ const Header: React.FC = () => {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+        <div className="hidden xl:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -127,26 +127,30 @@ const Header: React.FC = () => {
             )}
           </Link>
 
-          <Link href="/products" className="hidden md:flex btn-primary text-xs py-2.5 px-5">
-            {t('header.shopNow')}
-          </Link>
+          <div className="hidden xl:flex">
+            <Link href="/products" className="btn-primary text-xs py-2.5 px-5">
+              {t('header.shopNow')}
+            </Link>
+          </div>
 
           {status === 'anonymous' ? (
-            <Link href="/login" className="hidden md:flex btn-outline text-xs py-2.5 px-5">
-              {t('auth.signIn')}
-            </Link>
+            <div className="hidden xl:flex">
+              <Link href="/login" className="btn-outline text-xs py-2.5 px-5">
+                {t('auth.signIn')}
+              </Link>
+            </div>
           ) : status === 'authenticated' ? (
             <>
               <Link
                 href="/account/orders"
-                className="hidden md:flex text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors"
+                className="hidden xl:flex text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors"
               >
                 {t('auth.account')}
               </Link>
               {isAdmin && (
                 <Link
                   href="/admin"
-                  className="hidden md:flex text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors"
+                  className="hidden xl:flex text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors"
                 >
                   {t('auth.admin')}
                 </Link>
@@ -154,7 +158,7 @@ const Header: React.FC = () => {
               <button
                 type="button"
                 onClick={() => void logout()}
-                className="hidden md:flex text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors"
+                className="hidden xl:flex text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors"
               >
                 {t('auth.logout')}
               </button>
@@ -164,7 +168,7 @@ const Header: React.FC = () => {
           {/* Mobile Hamburger */}
           <button
             onClick={() => setMobileOpen(true)}
-            className="md:hidden p-2.5 rounded-xl border border-border hover:border-primary transition-all"
+            className="xl:hidden p-2.5 rounded-xl border border-border hover:border-primary transition-all"
             aria-label={t('header.openMenu')}
           >
             <Icon name="Bars3Icon" size={20} className="text-foreground" />
