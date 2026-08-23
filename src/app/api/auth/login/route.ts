@@ -4,33 +4,37 @@ import { NextResponse } from 'next/server';
 import { backendRequest, BackendError } from '@/server/backend-client';
 import { assertSameOrigin, OriginError } from '@/server/origin-guard';
 import { SESSION_COOKIE_NAME, sessionCookieOptions } from '@/server/session-cookie';
-
-type SessionUser = Record<string, unknown>;
-type LoginResult = { access_token: string; expires_at: number; user: SessionUser };
+import { parsePublicSessionUser, type PublicSessionUser } from '@/server/session-user';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const publicUser = (value: SessionUser) => {
+type LoginSession = {
+  accessToken: string;
+  expiresAt: number;
+  maxAge: number;
+  user: PublicSessionUser;
+};
+
+const parseLoginSession = (value: unknown, nowInSeconds: number): LoginSession | undefined => {
+  if (!isRecord(value) || typeof value.access_token !== 'string') return undefined;
+  const accessToken = value.access_token.trim();
+  if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(accessToken)) return undefined;
+  const expiresAt = value.expires_at;
   if (
-    !Number.isSafeInteger(value.member_id) ||
-    typeof value.username !== 'string' ||
-    typeof value.first_name !== 'string' ||
-    !Number.isSafeInteger(value.permission_id) ||
-    typeof value.permission_name !== 'string'
+    typeof expiresAt !== 'number' ||
+    !Number.isSafeInteger(expiresAt) ||
+    expiresAt <= nowInSeconds
   ) {
-    throw new Error('Invalid session user.');
+    return undefined;
   }
-  return {
-    member_id: value.member_id,
-    username: value.username,
-    first_name: value.first_name,
-    permission_id: value.permission_id,
-    permission_name: value.permission_name,
-    ...(typeof value.profile_image === 'string' && value.profile_image
-      ? { profile_image: value.profile_image }
-      : {}),
-  };
+
+  const user = parsePublicSessionUser(value.user);
+  if (!user) return undefined;
+
+  const maxAge = expiresAt - nowInSeconds;
+  if (!Number.isSafeInteger(maxAge) || maxAge <= 0) return undefined;
+  return { accessToken, expiresAt, maxAge, user };
 };
 
 const errorResponse = (error: unknown) => {
@@ -53,24 +57,17 @@ export async function POST(request: Request) {
       throw new Error('Invalid login request.');
     }
 
-    const result = await backendRequest<LoginResult>('/api/v1/login', {
+    const result = await backendRequest<unknown>('/api/v1/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: body.username, password: body.password }),
     });
-    if (
-      !isRecord(result) ||
-      typeof result.access_token !== 'string' ||
-      !Number.isFinite(result.expires_at) ||
-      !isRecord(result.user)
-    ) {
-      throw new Error('Invalid login response.');
-    }
+    const session = parseLoginSession(result, Math.floor(Date.now() / 1000));
+    if (!session) throw new Error('Invalid login response.');
 
-    const maxAge = Math.max(0, Math.floor(result.expires_at - Date.now() / 1000));
     const cookieStore = await cookies();
-    cookieStore.set(SESSION_COOKIE_NAME, result.access_token, sessionCookieOptions(maxAge));
-    return NextResponse.json({ user: publicUser(result.user), expiresAt: result.expires_at });
+    cookieStore.set(SESSION_COOKIE_NAME, session.accessToken, sessionCookieOptions(session.maxAge));
+    return NextResponse.json({ user: session.user, expiresAt: session.expiresAt });
   } catch (error) {
     return errorResponse(error);
   }
