@@ -1,42 +1,89 @@
 # Gadget Arena Storefront
 
-Gadget Arena is a bilingual Next.js storefront. Authentication uses same-origin route handlers as a Backend-for-Frontend (BFF): the browser never calls the Go authentication API directly and never receives a JWT in JavaScript.
+Gadget Arena is a bilingual Next.js storefront for gaming gear and PC accessories. It is a portfolio frontend with a browseable product catalog, stock-aware cart, and a truthful demo-first checkout.
 
 ## Quick start
 
-This repository uses npm.
+This project uses npm as its package-manager standard.
 
 ```bash
 npm install
 npm run dev
 ```
 
-The development server runs at `http://localhost:4028`.
+Open [http://localhost:4028](http://localhost:4028).
 
-## Authentication configuration
+## What it includes
 
-Copy `.env.example` to `.env.local` and configure:
+- Product catalog with search, category, brand, stock, and price filters.
+- Thai-baht pricing and factual stock availability.
+- A cart stored locally in the browser, with stock-aware quantity limits.
+- English as the default language with a persisted Thai language choice.
+- Dark mode by default with a persisted light-mode preference.
+- Demo-first checkout with delivery-detail validation; it does not collect payment.
 
-| Variable | Purpose |
-| --- | --- |
-| `BACKEND_API_URL` | Server-only Go API origin; required for BFF authentication. Never use a `NEXT_PUBLIC_` name. |
-| `NEXT_PUBLIC_SITE_URL` | Canonical Storefront origin, used to validate same-origin state-changing requests. |
-| `NEXT_PUBLIC_API_URL` | Optional public-catalog API origin. It is not an authentication setting. |
+## Catalog and backend status
 
-For a local full-stack session, run the Go API separately, set `BACKEND_API_URL` to its origin, and set `NEXT_PUBLIC_SITE_URL` to the Storefront origin. Do not place database passwords, administrator bootstrap passwords, JWT keys, or JWTs in `.env.local` or any `NEXT_PUBLIC_*` variable.
+The catalog uses the public Go API when `NEXT_PUBLIC_API_URL` is configured. Missing, unavailable, or invalid API responses fall back to local fixtures so the storefront remains browseable. Catalog calls require no token; checkout remains demo-first without a developer-provided authenticated session.
 
-## Session boundary
+The current phase connects the storefront to the public catalog read path. Authentication, payment, order submission, and production deployment are out of scope for this phase.
 
-`POST /api/auth/login` forwards credentials server-side and stores the returned access token only in the `gadget_arena_session` cookie. The cookie is `HttpOnly`, `SameSite=Lax`, `Path=/`, and `Secure` in production. Local and session storage must not contain a JWT. `GET /api/auth/session` restores the public session profile; `POST /api/auth/logout` clears the cookie even when the backend is unavailable.
+### Run with the local Go API
 
-The Go access-token lifetime is configured with `JWT_ACCESS_TTL` (two hours by default in development). There is no refresh token: an expired, invalid, or missing session returns 401 and requires sign-in again.
+In `project_intern1/.worktrees/catalog-api`:
 
-Public registration creates Members only. It has no role picker; administrator accounts are created exclusively through the backend's server-side bootstrap command.
+```powershell
+Copy-Item .env.example .env
+docker compose up -d
+go run ./cmd/generate-dev-keys
+$env:DATABASE_USER = 'gadget_arena'
+$env:DATABASE_PASSWORD = 'local_app_password'
+$env:DATABASE_ADDR = '127.0.0.1'
+$env:DATABASE_DBNAME = 'gadget_arena'
+$env:DATABASE_PORT = '3307'
+$env:SERVER_PORT = '1323'
+go run .
+```
+
+The backend prerequisites are Docker MySQL, generated development keys, all documented process-local `DATABASE_*` values, and port `1323`.
+
+In the Storefront:
+
+```powershell
+Copy-Item .env.example .env.local
+npm install
+npm run dev
+```
+
+Storefront development uses npm and runs on port `4028`. `NEXT_PUBLIC_*` values are exposed to the browser and must never contain secrets. Copy `.env.example` to `.env.local` for full-stack local development. Removing `.env` from Git tracking does not remove historic values; rotate any real credentials.
+
+## Environment variables
+
+| Variable | Needed for | Description |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | Production deployment | Canonical URL used by metadata, sitemap, and robots. |
+| `NEXT_PUBLIC_API_URL` | Optional public catalog API | Base URL for the Go API; use `http://localhost:1323` for the local backend. |
+
+`NEXT_PUBLIC_API_URL` is optional. There is no public login, token-entry, or payment interface. Without a configured or available API, the catalog uses local fixtures.
 
 ## Verification
+
+Run these before publishing changes:
 
 ```bash
 npm test
 npm run type-check
 npm run build
 ```
+
+To check whitespace before committing:
+
+```bash
+git diff --check
+```
+
+## Authentication sessions
+
+Authentication goes through same-origin BFF routes. Configure server-only `BACKEND_API_URL` and `NEXT_PUBLIC_SITE_URL`; set `NEXT_PUBLIC_SITE_URL` to the final public origin before `npm run build`, because changing only runtime environment configuration causes state-changing BFF requests to fail with `403 invalid_origin`.
+
+Login stores the backend JWT only in an HttpOnly, `SameSite=Lax`, path-scoped cookie. Cookie expiry tracks the backend `JWT_ACCESS_TTL` (two hours by default locally); expired sessions require login again. Browser JavaScript, Local Storage, and Session Storage never receive a JWT. Public registration always creates a Member; administrators are bootstrapped only through the backend CLI.
