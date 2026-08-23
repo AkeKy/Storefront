@@ -7,6 +7,7 @@ import Icon from '@/components/ui/AppIcon';
 import { useTheme } from '@/context/ThemeContext';
 import { useCart } from '@/features/cart/CartContext';
 import { useLanguage } from '@/features/i18n/LanguageContext';
+import { useAuth } from '@/features/auth/AuthContext';
 
 function LanguageToggle() {
   const { locale, setLocale, t } = useLanguage();
@@ -31,6 +32,7 @@ const Header: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const { itemCount } = useCart();
   const { t } = useLanguage();
+  const { status, isAdmin, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -129,6 +131,36 @@ const Header: React.FC = () => {
             {t('header.shopNow')}
           </Link>
 
+          {status === 'anonymous' ? (
+            <Link href="/login" className="hidden md:flex btn-outline text-xs py-2.5 px-5">
+              {t('auth.signIn')}
+            </Link>
+          ) : status === 'authenticated' ? (
+            <>
+              <Link
+                href="/account/orders"
+                className="hidden md:flex text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors"
+              >
+                {t('auth.account')}
+              </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="hidden md:flex text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('auth.admin')}
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="hidden md:flex text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors"
+              >
+                {t('auth.logout')}
+              </button>
+            </>
+          ) : null}
+
           {/* Mobile Hamburger */}
           <button
             onClick={() => setMobileOpen(true)}
@@ -174,6 +206,44 @@ const Header: React.FC = () => {
                 {link.label}
               </Link>
             ))}
+            {status === 'anonymous' ? (
+              <Link
+                href="/login"
+                onClick={() => setMobileOpen(false)}
+                className="text-2xl font-black uppercase tracking-tight text-foreground hover:text-primary transition-colors py-3 border-b border-border/50"
+              >
+                {t('auth.signIn')}
+              </Link>
+            ) : status === 'authenticated' ? (
+              <>
+                <Link
+                  href="/account/orders"
+                  onClick={() => setMobileOpen(false)}
+                  className="text-2xl font-black uppercase tracking-tight text-foreground hover:text-primary transition-colors py-3 border-b border-border/50"
+                >
+                  {t('auth.account')}
+                </Link>
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileOpen(false)}
+                    className="text-2xl font-black uppercase tracking-tight text-foreground hover:text-primary transition-colors py-3 border-b border-border/50"
+                  >
+                    {t('auth.admin')}
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    void logout();
+                    setMobileOpen(false);
+                  }}
+                  className="text-left text-2xl font-black uppercase tracking-tight text-foreground hover:text-primary transition-colors py-3 border-b border-border/50"
+                >
+                  {t('auth.logout')}
+                </button>
+              </>
+            ) : null}
           </div>
 
           <div className="px-6 mt-8">
