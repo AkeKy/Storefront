@@ -1,3 +1,5 @@
+import 'server-only';
+
 const REQUEST_TIMEOUT_MS = 5_000;
 
 type BackendEnvelope = {

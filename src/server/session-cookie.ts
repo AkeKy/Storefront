@@ -1,3 +1,5 @@
+import 'server-only';
+
 export const SESSION_COOKIE_NAME = 'gadget_arena_session';
 
 export const sessionCookieOptions = (maxAge: number) => ({
