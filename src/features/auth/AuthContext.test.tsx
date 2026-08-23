@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthProvider, useAuth } from './AuthContext';
@@ -21,12 +21,21 @@ function Probe() {
         Login
       </button>
       <button onClick={() => void auth.logout()}>Logout</button>
+      <button onClick={() => void auth.refresh()}>Refresh</button>
     </>
   );
 }
 
 const response = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((nextResolve) => {
+    resolve = nextResolve;
+  });
+  return { promise, resolve };
+};
 
 describe('AuthProvider', () => {
   beforeEach(() => {
@@ -107,5 +116,87 @@ describe('AuthProvider', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Logout' }));
 
     await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('anonymous'));
+  });
+
+  it('keeps a successful login when a stale mount session response resolves afterward', async () => {
+    const mountSession = deferred<Response>();
+    vi.mocked(fetch)
+      .mockReturnValueOnce(mountSession.promise)
+      .mockResolvedValueOnce(response({ user: validUser, expiresAt: 1_800_000_000 }));
+
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Login' }));
+    expect(await screen.findByTestId('user')).toHaveTextContent('buyer');
+
+    await act(async () => {
+      mountSession.resolve(
+        response({
+          user: { ...validUser, username: 'stale-member', permission_id: 2 },
+        })
+      );
+      await Promise.resolve();
+    });
+    expect(screen.getByTestId('user')).toHaveTextContent('buyer');
+  });
+
+  it('keeps logout anonymous when a stale mount session response resolves afterward', async () => {
+    const mountSession = deferred<Response>();
+    vi.mocked(fetch)
+      .mockReturnValueOnce(mountSession.promise)
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Logout' }));
+    expect(await screen.findByTestId('status')).toHaveTextContent('anonymous');
+
+    await act(async () => {
+      mountSession.resolve(response({ user: validUser }));
+      await Promise.resolve();
+    });
+    expect(screen.getByTestId('status')).toHaveTextContent('anonymous');
+  });
+
+  it('keeps the newest refresh result when responses finish out of order', async () => {
+    const firstRefresh = deferred<Response>();
+    const secondRefresh = deferred<Response>();
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(response({ code: 'unauthorized' }, 401))
+      .mockReturnValueOnce(firstRefresh.promise)
+      .mockReturnValueOnce(secondRefresh.promise);
+
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>
+    );
+    await screen.findByText('anonymous');
+    await userEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+
+    secondRefresh.resolve(
+      response({
+        user: {
+          ...validUser,
+          username: 'newest-admin',
+          permission_id: 1,
+          permission_name: 'Admin',
+        },
+      })
+    );
+    expect(await screen.findByTestId('user')).toHaveTextContent('newest-admin');
+
+    await act(async () => {
+      firstRefresh.resolve(response({ user: { ...validUser, username: 'stale-member' } }));
+      await Promise.resolve();
+    });
+    expect(screen.getByTestId('user')).toHaveTextContent('newest-admin');
   });
 });

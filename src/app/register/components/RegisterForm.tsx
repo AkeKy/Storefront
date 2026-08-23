@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage, type MessageKey } from '@/features/i18n/LanguageContext';
@@ -34,6 +34,17 @@ const fields: Array<{
   { name: 'birth_date', label: 'auth.birthDate', type: 'date', autoComplete: 'bday' },
 ];
 
+const fieldOrder: Array<keyof FormState> = [
+  'username',
+  'first_name',
+  'last_name',
+  'phone',
+  'email',
+  'birth_date',
+  'password',
+  'confirmPassword',
+];
+
 const errorKey = (error: string): MessageKey => {
   switch (error) {
     case 'accountConflict':
@@ -53,6 +64,7 @@ export default function RegisterForm() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [submissionError, setSubmissionError] = useState<MessageKey>();
   const [submitting, setSubmitting] = useState(false);
+  const inputs = useRef<Partial<Record<keyof FormState, HTMLInputElement | null>>>({});
 
   const update = (name: keyof FormState, value: string) => {
     setForm((current) => ({ ...current, [name]: value }));
@@ -70,7 +82,11 @@ export default function RegisterForm() {
       nextErrors.confirmPassword = 'auth.passwordMismatch';
     setErrors(nextErrors);
     setSubmissionError(undefined);
-    if (Object.keys(nextErrors).length) return;
+    const firstInvalidField = fieldOrder.find((field) => nextErrors[field]);
+    if (firstInvalidField) {
+      inputs.current[firstInvalidField]?.focus();
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -85,7 +101,7 @@ export default function RegisterForm() {
   };
 
   return (
-    <form className="surface-card p-6 sm:p-8" onSubmit={submit} noValidate>
+    <form className="surface-card p-6 sm:p-8" onSubmit={submit} noValidate aria-busy={submitting}>
       <div className="grid gap-4 sm:grid-cols-2">
         {fields.map((field) => {
           const fieldError = errors[field.name];
@@ -93,15 +109,24 @@ export default function RegisterForm() {
             <label key={field.name} className={field.name === 'username' ? 'sm:col-span-2' : ''}>
               <span className="mb-1 block text-sm font-semibold">{t(field.label)}</span>
               <input
+                ref={(input) => {
+                  inputs.current[field.name] = input;
+                }}
+                id={`register-${field.name}`}
                 className="checkout-input"
                 type={field.type ?? 'text'}
                 autoComplete={field.autoComplete}
                 aria-invalid={Boolean(fieldError)}
+                aria-describedby={fieldError ? `register-${field.name}-error` : undefined}
                 value={form[field.name]}
                 onChange={(event) => update(field.name, event.target.value)}
               />
               {fieldError && (
-                <p role="alert" className="mt-1 text-sm text-destructive">
+                <p
+                  id={`register-${field.name}-error`}
+                  role="alert"
+                  className="mt-1 text-sm text-destructive"
+                >
                   {t(fieldError)}
                 </p>
               )}
@@ -111,15 +136,20 @@ export default function RegisterForm() {
         <label>
           <span className="mb-1 block text-sm font-semibold">{t('auth.password')}</span>
           <input
+            ref={(input) => {
+              inputs.current.password = input;
+            }}
+            id="register-password"
             className="checkout-input"
             type="password"
             autoComplete="new-password"
             aria-invalid={Boolean(errors.password)}
+            aria-describedby={errors.password ? 'register-password-error' : undefined}
             value={form.password}
             onChange={(event) => update('password', event.target.value)}
           />
           {errors.password && (
-            <p role="alert" className="mt-1 text-sm text-destructive">
+            <p id="register-password-error" role="alert" className="mt-1 text-sm text-destructive">
               {t(errors.password)}
             </p>
           )}
@@ -127,15 +157,24 @@ export default function RegisterForm() {
         <label>
           <span className="mb-1 block text-sm font-semibold">{t('auth.confirmPassword')}</span>
           <input
+            ref={(input) => {
+              inputs.current.confirmPassword = input;
+            }}
+            id="register-confirmPassword"
             className="checkout-input"
             type="password"
             autoComplete="new-password"
             aria-invalid={Boolean(errors.confirmPassword)}
+            aria-describedby={errors.confirmPassword ? 'register-confirmPassword-error' : undefined}
             value={form.confirmPassword}
             onChange={(event) => update('confirmPassword', event.target.value)}
           />
           {errors.confirmPassword && (
-            <p role="alert" className="mt-1 text-sm text-destructive">
+            <p
+              id="register-confirmPassword-error"
+              role="alert"
+              className="mt-1 text-sm text-destructive"
+            >
               {t(errors.confirmPassword)}
             </p>
           )}
@@ -144,6 +183,11 @@ export default function RegisterForm() {
       {submissionError && (
         <p role="alert" className="mt-4 text-sm text-destructive">
           {t(submissionError)}
+        </p>
+      )}
+      {submitting && (
+        <p role="status" aria-live="polite" className="sr-only">
+          {t('auth.creatingAccount')}
         </p>
       )}
       <button className="btn-primary mt-6 w-full justify-center" disabled={submitting}>

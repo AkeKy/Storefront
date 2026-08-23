@@ -1,6 +1,14 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type {
   AuthActionError,
   AuthActionResult,
@@ -81,69 +89,105 @@ const errorFor = (status: number, mode: 'login' | 'register'): AuthActionError =
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('loading');
   const [user, setUser] = useState<SessionUser>();
+  const mounted = useRef(false);
+  const sessionRequest = useRef<AbortController | undefined>(undefined);
+  const generation = useRef(0);
 
-  const refresh = async () => {
+  const invalidateSessionRequest = useCallback(() => {
+    generation.current += 1;
+    sessionRequest.current?.abort();
+    sessionRequest.current = undefined;
+    return generation.current;
+  }, []);
+
+  const refresh = useCallback(async () => {
+    const requestGeneration = invalidateSessionRequest();
+    const controller = new AbortController();
+    sessionRequest.current = controller;
     try {
-      const response = await fetch('/api/auth/session', { credentials: 'same-origin' });
+      const response = await fetch('/api/auth/session', {
+        credentials: 'same-origin',
+        signal: controller.signal,
+      });
       const body = (await readJson(response)) as PublicSessionResponse | undefined;
       const nextUser = response.ok ? parseSessionUser(body?.user) : undefined;
+      if (!mounted.current || requestGeneration !== generation.current) return;
       setUser(nextUser);
       setStatus(nextUser ? 'authenticated' : 'anonymous');
     } catch {
+      if (!mounted.current || requestGeneration !== generation.current) return;
+      setUser(undefined);
+      setStatus('anonymous');
+    } finally {
+      if (sessionRequest.current === controller) sessionRequest.current = undefined;
+    }
+  }, [invalidateSessionRequest]);
+
+  useEffect(() => {
+    mounted.current = true;
+    void refresh();
+    return () => {
+      mounted.current = false;
+      invalidateSessionRequest();
+    };
+  }, [invalidateSessionRequest, refresh]);
+
+  const login = useCallback(
+    async (credentials: LoginCredentials): Promise<AuthActionResult> => {
+      const requestGeneration = invalidateSessionRequest();
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(credentials),
+        });
+        const body = (await readJson(response)) as PublicSessionResponse | undefined;
+        const nextUser = response.ok ? parseSessionUser(body?.user) : undefined;
+        if (!mounted.current || requestGeneration !== generation.current)
+          return { ok: false, error: 'unavailable' };
+        if (!nextUser) return { ok: false, error: errorFor(response.status, 'login') };
+        setUser(nextUser);
+        setStatus('authenticated');
+        return { ok: true };
+      } catch {
+        return { ok: false, error: 'unavailable' };
+      }
+    },
+    [invalidateSessionRequest]
+  );
+
+  const register = useCallback(
+    async (registration: RegistrationData): Promise<AuthActionResult> => {
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(registration),
+        });
+        return response.ok
+          ? { ok: true }
+          : { ok: false, error: errorFor(response.status, 'register') };
+      } catch {
+        return { ok: false, error: 'unavailable' };
+      }
+    },
+    []
+  );
+
+  const logout = useCallback(async () => {
+    invalidateSessionRequest();
+    if (mounted.current) {
       setUser(undefined);
       setStatus('anonymous');
     }
-  };
-
-  useEffect(() => {
-    void refresh();
-  }, []);
-
-  const login = async (credentials: LoginCredentials): Promise<AuthActionResult> => {
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
-      });
-      const body = (await readJson(response)) as PublicSessionResponse | undefined;
-      const nextUser = response.ok ? parseSessionUser(body?.user) : undefined;
-      if (!nextUser) return { ok: false, error: errorFor(response.status, 'login') };
-      setUser(nextUser);
-      setStatus('authenticated');
-      return { ok: true };
-    } catch {
-      return { ok: false, error: 'unavailable' };
-    }
-  };
-
-  const register = async (registration: RegistrationData): Promise<AuthActionResult> => {
-    try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(registration),
-      });
-      return response.ok
-        ? { ok: true }
-        : { ok: false, error: errorFor(response.status, 'register') };
-    } catch {
-      return { ok: false, error: 'unavailable' };
-    }
-  };
-
-  const logout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
     } catch {
       // Logout must remove the local session view even if the network is unavailable.
-    } finally {
-      setUser(undefined);
-      setStatus('anonymous');
     }
-  };
+  }, [invalidateSessionRequest]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -155,7 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logout,
       refresh,
     }),
-    [status, user]
+    [login, logout, refresh, register, status, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

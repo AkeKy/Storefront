@@ -36,6 +36,10 @@ describe('Header', () => {
     );
 
     expect(screen.getByRole('link', { name: 'Products' })).toBeInTheDocument();
+    expect((await screen.findByRole('link', { name: 'Sign in' })).parentElement).toHaveClass(
+      'hidden',
+      'xl:flex'
+    );
 
     await user.click(screen.getByRole('button', { name: 'Switch language to Thai' }));
 
@@ -77,5 +81,8 @@ describe('Header', () => {
     expect(await screen.findByRole('link', { name: 'Account' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Admin' })).toHaveAttribute('href', '/admin');
     expect(screen.getByRole('button', { name: 'Logout' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Account' })).toHaveClass('xl:flex');
+    expect(screen.getByRole('link', { name: 'Admin' })).toHaveClass('xl:flex');
+    expect(screen.getByRole('button', { name: 'Open menu' })).toHaveClass('xl:hidden');
   });
 });

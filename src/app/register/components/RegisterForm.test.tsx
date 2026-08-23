@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LanguageProvider } from '@/features/i18n/LanguageContext';
@@ -51,6 +51,35 @@ describe('RegisterForm', () => {
     expect(mocks.replace).toHaveBeenCalledWith('/login');
   });
 
+  it('focuses the first invalid field and associates its error text', async () => {
+    renderForm();
+    await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
+
+    expect(await screen.findAllByRole('alert')).toHaveLength(8);
+    expect(screen.getByRole('textbox', { name: /username/i })).toHaveFocus();
+    expect(screen.getByRole('textbox', { name: /username/i })).toHaveAttribute(
+      'aria-describedby',
+      'register-username-error'
+    );
+  });
+
+  it('announces registration submission while the request is pending', async () => {
+    let resolveRegistration!: (value: { ok: true }) => void;
+    mocks.register.mockImplementation(
+      () => new Promise<{ ok: true }>((resolve) => (resolveRegistration = resolve))
+    );
+    const user = userEvent.setup();
+    renderForm();
+    await completeRegistration(user);
+
+    const submit = screen.getByRole('button', { name: 'Create account' });
+    await user.click(submit);
+    expect(submit).toBeDisabled();
+    expect(submit.closest('form')).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('status')).toHaveTextContent('Creating account...');
+    await act(async () => resolveRegistration({ ok: true }));
+  });
+
   it('clears both password fields after an unsuccessful request without showing raw errors', async () => {
     mocks.register.mockResolvedValue({ ok: false, error: 'accountConflict' });
     const user = userEvent.setup();
@@ -73,3 +102,14 @@ describe('RegisterForm', () => {
     expect(screen.getByLabelText('Confirm password')).toHaveValue('');
   });
 });
+
+async function completeRegistration(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(screen.getByLabelText('Username'), 'buyer');
+  await user.type(screen.getByLabelText('Password'), 'correct-horse-123');
+  await user.type(screen.getByLabelText('Confirm password'), 'correct-horse-123');
+  await user.type(screen.getByLabelText('First name'), 'Buy');
+  await user.type(screen.getByLabelText('Last name'), 'Er');
+  await user.type(screen.getByLabelText('Phone number'), '0812345678');
+  await user.type(screen.getByLabelText('Email address'), 'buyer@example.test');
+  await user.type(screen.getByLabelText('Birth date'), '2000-01-02');
+}

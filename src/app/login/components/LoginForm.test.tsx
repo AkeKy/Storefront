@@ -27,6 +27,11 @@ describe('LoginForm', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 
     expect(await screen.findAllByRole('alert')).toHaveLength(2);
+    expect(screen.getByRole('textbox', { name: /username/i })).toHaveFocus();
+    expect(screen.getByRole('textbox', { name: /username/i })).toHaveAttribute(
+      'aria-describedby',
+      'login-username-error'
+    );
     expect(mocks.login).not.toHaveBeenCalled();
   });
 
@@ -46,6 +51,8 @@ describe('LoginForm', () => {
 
     expect(mocks.login).toHaveBeenCalledTimes(1);
     expect(submit).toBeDisabled();
+    expect(submit.closest('form')).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('status')).toHaveTextContent('Signing in...');
     await act(async () => resolveLogin({ ok: true }));
   });
 
@@ -62,25 +69,36 @@ describe('LoginForm', () => {
     expect(screen.getByLabelText('Password')).toHaveValue('');
   });
 
-  it('returns to a valid internal path after login and rejects external return targets', async () => {
+  it('returns to a valid internal path after login', async () => {
     mocks.login.mockResolvedValue({ ok: true });
     const user = userEvent.setup();
-    const { rerender } = renderForm('/checkout');
+    renderForm('/checkout');
 
     await user.type(screen.getByLabelText('Username'), 'buyer');
     await user.type(screen.getByLabelText('Password'), 'password');
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
     expect(mocks.replace).toHaveBeenCalledWith('/checkout');
+  });
 
-    mocks.replace.mockClear();
-    rerender(
-      <LanguageProvider>
-        <LoginForm key="unsafe" returnTo="//attacker.example.test" />
-      </LanguageProvider>
-    );
+  it.each([
+    ['protocol-relative path', '//attacker.example.test'],
+    ['raw carriage return', '/checkout\r//attacker.example.test'],
+    ['raw line feed', '/checkout\n//attacker.example.test'],
+    ['raw tab', '/checkout\t//attacker.example.test'],
+    ['encoded carriage return', '/checkout%0d%0a//attacker.example.test'],
+    ['encoded tab', '/checkout%09//attacker.example.test'],
+    ['raw backslash', '/\\attacker.example.test'],
+    ['encoded backslash', '/%5cattacker.example.test'],
+    ['absolute scheme after normalization', '/%2f%2fattacker.example.test'],
+  ])('rejects %s as a return target', async (_name, returnTo) => {
+    mocks.login.mockResolvedValue({ ok: true });
+    const user = userEvent.setup();
+    renderForm(returnTo);
+
     await user.type(screen.getByLabelText('Username'), 'buyer');
     await user.type(screen.getByLabelText('Password'), 'password');
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
     expect(mocks.replace).toHaveBeenCalledWith('/');
+    expect(mocks.replace).not.toHaveBeenCalledWith(returnTo);
   });
 });
