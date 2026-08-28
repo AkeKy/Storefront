@@ -32,4 +32,20 @@ describe('validateRegistration', () => {
 
     expect(validateRegistration(registration, now)).toEqual(expected);
   });
+
+  it.each([
+    'buyer..name@example.test',
+    '.buyer@example.test',
+    'buyer.@example.test',
+    'buyer@.example.test',
+    'buyer@example..test',
+    'buyer@example.test.',
+    'buyer@-example.test',
+    'buyer@example-.test',
+  ])('rejects unsafe dot-atom or hostname email structure %s', (email) => {
+    const registration = validRegistration();
+    registration.email = email;
+
+    expect(validateRegistration(registration, now)).toEqual({ email: 'validation.email' });
+  });
 });

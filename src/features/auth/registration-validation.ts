@@ -13,7 +13,12 @@ const requiredFields = [
   'birth_date',
 ] as const satisfies ReadonlyArray<keyof RegistrationData>;
 
-const validEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const emailLocalAtom = "[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+";
+const emailDomainLabel = '[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?';
+const validEmail = (email: string) =>
+  new RegExp(
+    `^${emailLocalAtom}(?:\\.${emailLocalAtom})*@${emailDomainLabel}(?:\\.${emailDomainLabel})+$`
+  ).test(email);
 
 const parseBirthDate = (value: string): Date | undefined => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
