@@ -13,7 +13,7 @@ function LocaleProbe() {
 
   return (
     <>
-      <p>{`${locale}:${t('nav.home')}:${categoryLabel('mouse', 'Mouse')}:${stockLabel(true)}:${badgeLabel('New')}`}</p>
+      <p>{`${locale}:${t('nav.home')}:${categoryLabel('mouse', 'Mouse')}:${stockLabel(true)}:${badgeLabel('New')}:${t('auth.invalidPhone')}`}</p>
       <button type="button" onClick={() => setLocale('th')}>
         Switch
       </button>
@@ -33,11 +33,15 @@ describe('LanguageProvider', () => {
       </LanguageProvider>
     );
 
-    expect(screen.getByText(`en:Home:Mouse:In stock:New`)).toBeInTheDocument();
+    expect(
+      screen.getByText(`en:Home:Mouse:In stock:New:Enter a 10-digit Thai phone number.`)
+    ).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Switch' }));
 
-    expect(screen.getByText('th:หน้าหลัก:เมาส์:มีสินค้า:ใหม่')).toBeInTheDocument();
+    expect(
+      screen.getByText('th:หน้าหลัก:เมาส์:มีสินค้า:ใหม่:กรอกเบอร์โทรศัพท์ไทย 10 หลัก')
+    ).toBeInTheDocument();
     expect(window.localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('th');
   });
 
@@ -49,7 +53,9 @@ describe('LanguageProvider', () => {
       </LanguageProvider>
     );
 
-    expect(await screen.findByText('th:หน้าหลัก:เมาส์:มีสินค้า:ใหม่')).toBeInTheDocument();
+    expect(
+      await screen.findByText('th:หน้าหลัก:เมาส์:มีสินค้า:ใหม่:กรอกเบอร์โทรศัพท์ไทย 10 หลัก')
+    ).toBeInTheDocument();
 
     unmount();
     window.localStorage.setItem(LOCALE_STORAGE_KEY, 'fr');
@@ -59,6 +65,10 @@ describe('LanguageProvider', () => {
       </LanguageProvider>
     );
 
-    expect(screen.getByText(`${DEFAULT_LOCALE}:Home:Mouse:In stock:New`)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        `${DEFAULT_LOCALE}:Home:Mouse:In stock:New:Enter a 10-digit Thai phone number.`
+      )
+    ).toBeInTheDocument();
   });
 });
