@@ -85,7 +85,7 @@ export function validateDeliveryForm(form: DeliveryForm): DeliveryErrors {
 }
 
 export default function CheckoutContent() {
-  const { items, itemCount, subtotalTHB, updateQuantity, removeItem, clearCart } = useCart();
+  const { items, itemCount, subtotalTHB, updateQuantity, removeItem } = useCart();
   const { t } = useLanguage();
   const [form, setForm] = useState(initialForm);
   const [reviewing, setReviewing] = useState(false);
@@ -109,10 +109,7 @@ export default function CheckoutContent() {
     setIsSubmitting(true);
     setSubmissionError('');
     try {
-      const token = window.localStorage.getItem('byteforge-token') ?? undefined;
-      const nextResult = await createOrder(items, token);
-      if (nextResult.mode === 'submitted') clearCart();
-      setResult(nextResult);
+      setResult(await createOrder());
     } catch (error) {
       setSubmissionError(error instanceof Error ? error.message : t('catalog.loadError'));
     } finally {
@@ -125,12 +122,8 @@ export default function CheckoutContent() {
       <div className="flex min-h-screen items-center justify-center px-6 pt-24">
         <div className="max-w-md text-center">
           <Icon name="CheckIcon" size={40} className="mx-auto mb-5 text-primary" />
-          <h1 className="text-display-md">
-            {result.mode === 'demo' ? t('checkout.previewComplete') : t('checkout.orderConfirmed')}
-          </h1>
-          <p className="mt-4 text-muted-foreground">
-            {result.mode === 'demo' ? t('checkout.previewResult') : t('checkout.submittedResult')}
-          </p>
+          <h1 className="text-display-md">{t('checkout.previewComplete')}</h1>
+          <p className="mt-4 text-muted-foreground">{t('checkout.previewResult')}</p>
           <Link href="/products" className="btn-primary mt-8">
             {t('checkout.continueShopping')}
           </Link>

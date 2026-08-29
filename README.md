@@ -24,13 +24,13 @@ Open [http://localhost:4028](http://localhost:4028).
 
 ## Catalog and backend status
 
-The catalog uses the public Go API when `NEXT_PUBLIC_API_URL` is configured. Missing, unavailable, or invalid API responses fall back to local fixtures so the storefront remains browseable. Catalog calls require no token; checkout remains demo-first without a developer-provided authenticated session.
+The catalog uses the public Go API when `NEXT_PUBLIC_API_URL` is configured. Missing, unavailable, or invalid API responses fall back to local fixtures so the storefront remains browseable. Catalog calls require no token. Checkout remains demo-only until a same-origin order BFF is added; browser code never sends backend bearer credentials.
 
-The current phase connects the storefront to the public catalog read path. Authentication, payment, order submission, and production deployment are out of scope for this phase.
+The Storefront includes `/login` and `/register` plus same-origin BFF routes for register, login, session, and logout. Payment and production deployment remain outside this documentation scope.
 
 ### Run with the local Go API
 
-In `project_intern1/.worktrees/catalog-api`:
+In the `project_intern1` backend repository:
 
 ```powershell
 Copy-Item .env.example .env
@@ -61,10 +61,11 @@ Storefront development uses npm and runs on port `4028`. `NEXT_PUBLIC_*` values 
 
 | Variable | Needed for | Description |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | Production deployment | Canonical URL used by metadata, sitemap, and robots. |
+| `BACKEND_API_URL` | Authentication BFF (required) | Server-only Go API origin. Configure it wherever auth routes run, and never expose it through a `NEXT_PUBLIC_*` variable. |
+| `NEXT_PUBLIC_SITE_URL` | Build and production deployment | Final public Storefront origin used by metadata and same-origin checks. Set it before `npm run build`; changing only the runtime value is insufficient. |
 | `NEXT_PUBLIC_API_URL` | Optional public catalog API | Base URL for the Go API; use `http://localhost:1323` for the local backend. |
 
-`NEXT_PUBLIC_API_URL` is optional. There is no public login, token-entry, or payment interface. Without a configured or available API, the catalog uses local fixtures.
+`NEXT_PUBLIC_API_URL` is optional. Authentication uses the BFF session boundary, never developer token entry. Without a configured or available catalog API, the catalog uses local fixtures.
 
 ## Verification
 
@@ -81,3 +82,9 @@ To check whitespace before committing:
 ```bash
 git diff --check
 ```
+
+## Authentication sessions
+
+Authentication goes through same-origin BFF routes. Configure server-only `BACKEND_API_URL` and `NEXT_PUBLIC_SITE_URL`; set `NEXT_PUBLIC_SITE_URL` to the final public origin before `npm run build`, because changing only runtime environment configuration causes state-changing BFF requests to fail with `403 invalid_origin`.
+
+Login stores the backend JWT only in an HttpOnly, `SameSite=Lax`, path-scoped cookie. Authentication-cookie expiry follows the backend JWT expiry configured by `JWT_ACCESS_TTL` (two hours by default locally); expired sessions require login again. Browser JavaScript, Local Storage, and Session Storage never receive a JWT. Public registration always creates a Member; administrators are bootstrapped only through the backend CLI.

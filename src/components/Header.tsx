@@ -7,6 +7,7 @@ import Icon from '@/components/ui/AppIcon';
 import { useTheme } from '@/context/ThemeContext';
 import { useCart } from '@/features/cart/CartContext';
 import { useLanguage } from '@/features/i18n/LanguageContext';
+import { useAuth } from '@/features/auth/AuthContext';
 
 function LanguageToggle() {
   const { locale, setLocale, t } = useLanguage();
@@ -31,6 +32,7 @@ const Header: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const { itemCount } = useCart();
   const { t } = useLanguage();
+  const { status, isAdmin, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -58,7 +60,7 @@ const Header: React.FC = () => {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 px-6 py-5 flex items-center justify-between ${
+        className={`fixed top-0 left-0 w-full z-50 flex items-center gap-4 px-6 py-5 transition-all duration-500 ${
           scrolled ? 'nav-scrolled' : 'bg-transparent'
         }`}
       >
@@ -71,7 +73,7 @@ const Header: React.FC = () => {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+        <div className="hidden shrink-0 items-center gap-4 xl:flex xl:mx-4 2xl:gap-8">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -84,7 +86,7 @@ const Header: React.FC = () => {
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-3">
+        <div className="ml-auto flex shrink-0 items-center gap-2 xl:gap-3">
           <LanguageToggle />
 
           {/* Theme Toggle */}
@@ -125,14 +127,48 @@ const Header: React.FC = () => {
             )}
           </Link>
 
-          <Link href="/products" className="hidden md:flex btn-primary text-xs py-2.5 px-5">
-            {t('header.shopNow')}
-          </Link>
+          <div className="hidden xl:flex">
+            <Link href="/products" className="btn-primary text-xs py-2.5 px-5">
+              {t('header.shopNow')}
+            </Link>
+          </div>
+
+          {status === 'anonymous' ? (
+            <div className="hidden xl:flex">
+              <Link href="/login" className="btn-outline text-xs py-2.5 px-5">
+                {t('auth.signIn')}
+              </Link>
+            </div>
+          ) : status === 'authenticated' ? (
+            <>
+              <Link
+                href="/account/orders"
+                className="hidden xl:flex text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors"
+              >
+                {t('auth.account')}
+              </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="hidden xl:flex text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('auth.admin')}
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="hidden xl:flex text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors"
+              >
+                {t('auth.logout')}
+              </button>
+            </>
+          ) : null}
 
           {/* Mobile Hamburger */}
           <button
             onClick={() => setMobileOpen(true)}
-            className="md:hidden p-2.5 rounded-xl border border-border hover:border-primary transition-all"
+            className="xl:hidden p-2.5 rounded-xl border border-border hover:border-primary transition-all"
             aria-label={t('header.openMenu')}
           >
             <Icon name="Bars3Icon" size={20} className="text-foreground" />
@@ -174,6 +210,44 @@ const Header: React.FC = () => {
                 {link.label}
               </Link>
             ))}
+            {status === 'anonymous' ? (
+              <Link
+                href="/login"
+                onClick={() => setMobileOpen(false)}
+                className="text-2xl font-black uppercase tracking-tight text-foreground hover:text-primary transition-colors py-3 border-b border-border/50"
+              >
+                {t('auth.signIn')}
+              </Link>
+            ) : status === 'authenticated' ? (
+              <>
+                <Link
+                  href="/account/orders"
+                  onClick={() => setMobileOpen(false)}
+                  className="text-2xl font-black uppercase tracking-tight text-foreground hover:text-primary transition-colors py-3 border-b border-border/50"
+                >
+                  {t('auth.account')}
+                </Link>
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileOpen(false)}
+                    className="text-2xl font-black uppercase tracking-tight text-foreground hover:text-primary transition-colors py-3 border-b border-border/50"
+                  >
+                    {t('auth.admin')}
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    void logout();
+                    setMobileOpen(false);
+                  }}
+                  className="text-left text-2xl font-black uppercase tracking-tight text-foreground hover:text-primary transition-colors py-3 border-b border-border/50"
+                >
+                  {t('auth.logout')}
+                </button>
+              </>
+            ) : null}
           </div>
 
           <div className="px-6 mt-8">
