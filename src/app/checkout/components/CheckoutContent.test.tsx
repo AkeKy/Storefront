@@ -35,6 +35,25 @@ function renderCheckout() {
 beforeEach(() => window.localStorage.clear());
 afterEach(() => createOrderMock.mockReset());
 
+it('states that checkout is demo-only without suggesting live browser API submission', () => {
+  renderCheckout();
+
+  expect(
+    screen.getByText(/creates a preview only—no payment or order is sent/i)
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByText(/live API order|authenticated session in this browser/i)
+  ).not.toBeInTheDocument();
+});
+
+it('states the same demo-only checkout boundary in Thai', () => {
+  window.localStorage.setItem('gadget-arena-locale', 'th');
+  renderCheckout();
+
+  expect(screen.getByText(/ไม่มีการเรียกเก็บเงินหรือสร้างคำสั่งซื้อจริง/)).toBeInTheDocument();
+  expect(screen.queryByText(/จนกว่าจะมีการเชื่อมต่อระบบ Backend API/)).not.toBeInTheDocument();
+});
+
 it('blocks review until required delivery details are entered', async () => {
   renderCheckout();
   await userEvent.click(screen.getByRole('button', { name: /review order/i }));
