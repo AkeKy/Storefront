@@ -110,7 +110,7 @@ export const messages = {
     'checkout.continueShopping': 'Continue shopping',
     'checkout.title': 'Checkout',
     'checkout.demoNotice':
-      'Demo-first checkout: completing this form creates a preview only—no payment or order is sent. A live API order is sent only when a developer has already configured an authenticated session in this browser.',
+      'Demo checkout: completing this form creates a preview only—no payment or order is sent. Your cart stays unchanged.',
     'checkout.deliveryDetails': 'Delivery details',
     'checkout.validationSummary':
       'Enter your name and delivery address, plus contact details, before reviewing your order.',
@@ -258,7 +258,7 @@ export const messages = {
     'checkout.continueShopping': 'เลือกซื้อสินค้าต่อ',
     'checkout.title': 'สั่งซื้อสินค้า',
     'checkout.demoNotice':
-      'ระบบสั่งซื้อโหมดสาธิต (Demo): การกรอกข้อมูลในหน้านี้เป็นเพียงตัวอย่างสำหรับทดสอบระบบ จะไม่มีการเรียกเก็บเงินหรือสร้างคำสั่งซื้อจริง จนกว่าจะมีการเชื่อมต่อระบบ Backend API',
+      'ระบบสั่งซื้อโหมดสาธิต: การกรอกข้อมูลในหน้านี้เป็นเพียงตัวอย่าง จะไม่มีการเรียกเก็บเงินหรือสร้างคำสั่งซื้อจริง และสินค้าในตะกร้าจะยังคงเดิม',
     'checkout.deliveryDetails': 'รายละเอียดการจัดส่ง',
     'checkout.validationSummary': 'กรอกชื่อและที่อยู่จัดส่ง พร้อมข้อมูลติดต่อก่อนตรวจสอบคำสั่งซื้อ',
     'checkout.reviewOrder': 'ตรวจสอบคำสั่งซื้อ',
