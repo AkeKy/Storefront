@@ -57,7 +57,7 @@ export function validateRegistration(
   }
 
   if (registration.password.trim()) {
-    if (Array.from(registration.password).length < 12) {
+    if (Array.from(registration.password).length < 8) {
       errors.password = 'auth.passwordTooShort';
     } else if (new TextEncoder().encode(registration.password).byteLength > 72) {
       errors.password = 'auth.passwordTooLong';

@@ -56,17 +56,31 @@ describe('LoginForm', () => {
     await act(async () => resolveLogin({ ok: true }));
   });
 
-  it('shows a generic message for invalid credentials and clears the password', async () => {
+  it('shows invalid credentials as a prominent field error and clears it on edit', async () => {
     mocks.login.mockResolvedValue({ ok: false, error: 'invalidCredentials' });
     const user = userEvent.setup();
     renderForm();
 
-    await user.type(screen.getByLabelText('Username'), 'buyer');
-    await user.type(screen.getByLabelText('Password'), 'password');
+    const username = screen.getByLabelText('Username');
+    const password = screen.getByLabelText('Password');
+    await user.type(username, 'buyer');
+    await user.type(password, 'password');
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Invalid username or password.');
-    expect(screen.getByLabelText('Password')).toHaveValue('');
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Invalid username or password.');
+    expect(alert).toHaveClass('border-destructive/40', 'bg-destructive/10');
+    expect(username).toHaveAttribute('aria-invalid', 'true');
+    expect(password).toHaveAttribute('aria-invalid', 'true');
+    expect(password).toHaveAttribute('aria-describedby', 'login-submission-error');
+    expect(password).toHaveValue('');
+    expect(password).toHaveFocus();
+
+    await user.type(password, 'n');
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(username).toHaveAttribute('aria-invalid', 'false');
+    expect(password).toHaveAttribute('aria-invalid', 'false');
   });
 
   it('returns to a valid internal path after login', async () => {

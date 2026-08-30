@@ -19,12 +19,19 @@ describe('validateRegistration', () => {
     expect(validateRegistration(validRegistration(), now)).toEqual({});
   });
 
+  it('accepts an eight-character password', () => {
+    const registration = validRegistration();
+    registration.password = '12345678';
+
+    expect(validateRegistration(registration, now)).toEqual({});
+  });
+
   it.each([
     ['email', 'buyer.example.test', { email: 'validation.email' }],
     ['phone', '081234567', { phone: 'auth.invalidPhone' }],
     ['birth_date', '2020-02-30', { birth_date: 'auth.invalidBirthDate' }],
     ['birth_date', '2020-08-24', { birth_date: 'auth.minimumAge' }],
-    ['password', '🔐'.repeat(11), { password: 'auth.passwordTooShort' }],
+    ['password', '🔐'.repeat(7), { password: 'auth.passwordTooShort' }],
     ['password', 'é'.repeat(37), { password: 'auth.passwordTooLong' }],
   ] as const)('rejects invalid backend-bound %s data', (field, value, expected) => {
     const registration = validRegistration();

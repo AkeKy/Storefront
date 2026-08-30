@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import AppLogo from '@/components/ui/AppLogo';
 import Icon from '@/components/ui/AppIcon';
@@ -29,10 +29,13 @@ function LanguageToggle() {
 const Header: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const accountMenu = useRef<HTMLDivElement>(null);
+  const accountMenuButton = useRef<HTMLButtonElement>(null);
   const { theme, toggleTheme } = useTheme();
   const { itemCount } = useCart();
   const { t } = useLanguage();
-  const { status, isAdmin, logout } = useAuth();
+  const { status, user, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -50,6 +53,30 @@ const Header: React.FC = () => {
       document.body.style.overflow = '';
     };
   }, [mobileOpen]);
+
+  useEffect(() => {
+    if (!accountMenuOpen) return;
+
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!accountMenu.current?.contains(event.target as Node)) setAccountMenuOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setAccountMenuOpen(false);
+      accountMenuButton.current?.focus();
+    };
+
+    document.addEventListener('mousedown', closeOnOutsideClick);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('mousedown', closeOnOutsideClick);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [accountMenuOpen]);
+
+  useEffect(() => {
+    if (status !== 'authenticated') setAccountMenuOpen(false);
+  }, [status]);
 
   const navLinks = [
     { label: t('nav.home'), href: '/' },
@@ -140,29 +167,64 @@ const Header: React.FC = () => {
               </Link>
             </div>
           ) : status === 'authenticated' ? (
-            <>
-              <Link
-                href="/account/orders"
-                className="hidden xl:flex text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors"
-              >
-                {t('auth.account')}
-              </Link>
-              {isAdmin && (
-                <Link
-                  href="/admin"
-                  className="hidden xl:flex text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {t('auth.admin')}
-                </Link>
-              )}
+            <div ref={accountMenu} className="relative hidden xl:block">
               <button
+                ref={accountMenuButton}
                 type="button"
-                onClick={() => void logout()}
-                className="hidden xl:flex text-xs font-bold tracking-widest uppercase text-muted-foreground hover:text-primary transition-colors"
+                onClick={() => setAccountMenuOpen((open) => !open)}
+                className="flex max-w-48 items-center gap-2 rounded-xl border border-border px-3 py-2.5 text-xs font-bold text-foreground transition-colors hover:border-primary hover:text-primary"
+                aria-haspopup="menu"
+                aria-expanded={accountMenuOpen}
               >
-                {t('auth.logout')}
+                <Icon name="UserCircleIcon" size={19} aria-hidden />
+                <span className="truncate">{user?.username}</span>
+                <Icon
+                  name="ChevronDownIcon"
+                  size={14}
+                  className={`transition-transform ${accountMenuOpen ? 'rotate-180' : ''}`}
+                  aria-hidden
+                />
               </button>
-            </>
+
+              {accountMenuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-card p-2 shadow-xl"
+                >
+                  <Link
+                    href="/products"
+                    role="menuitem"
+                    onClick={() => setAccountMenuOpen(false)}
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted hover:text-primary"
+                  >
+                    <Icon name="Squares2X2Icon" size={18} aria-hidden />
+                    {t('nav.products')}
+                  </Link>
+                  <Link
+                    href="/checkout"
+                    role="menuitem"
+                    onClick={() => setAccountMenuOpen(false)}
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted hover:text-primary"
+                  >
+                    <Icon name="ShoppingCartIcon" size={18} aria-hidden />
+                    {t('nav.checkout')}
+                  </Link>
+                  <div className="my-1 border-t border-border" />
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setAccountMenuOpen(false);
+                      void logout();
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10"
+                  >
+                    <Icon name="ArrowRightStartOnRectangleIcon" size={18} aria-hidden />
+                    {t('auth.signOut')}
+                  </button>
+                </div>
+              )}
+            </div>
           ) : null}
 
           {/* Mobile Hamburger */}
@@ -220,22 +282,10 @@ const Header: React.FC = () => {
               </Link>
             ) : status === 'authenticated' ? (
               <>
-                <Link
-                  href="/account/orders"
-                  onClick={() => setMobileOpen(false)}
-                  className="text-2xl font-black uppercase tracking-tight text-foreground hover:text-primary transition-colors py-3 border-b border-border/50"
-                >
-                  {t('auth.account')}
-                </Link>
-                {isAdmin && (
-                  <Link
-                    href="/admin"
-                    onClick={() => setMobileOpen(false)}
-                    className="text-2xl font-black uppercase tracking-tight text-foreground hover:text-primary transition-colors py-3 border-b border-border/50"
-                  >
-                    {t('auth.admin')}
-                  </Link>
-                )}
+                <div className="flex items-center gap-3 py-3 text-lg font-black text-primary">
+                  <Icon name="UserCircleIcon" size={24} aria-hidden />
+                  <span className="truncate">{user?.username}</span>
+                </div>
                 <button
                   type="button"
                   onClick={() => {
@@ -244,7 +294,7 @@ const Header: React.FC = () => {
                   }}
                   className="text-left text-2xl font-black uppercase tracking-tight text-foreground hover:text-primary transition-colors py-3 border-b border-border/50"
                 >
-                  {t('auth.logout')}
+                  {t('auth.signOut')}
                 </button>
               </>
             ) : null}
