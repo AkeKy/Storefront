@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Icon from '@/components/ui/AppIcon';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLanguage, type MessageKey } from '@/features/i18n/LanguageContext';
 
@@ -67,6 +68,7 @@ export default function LoginForm({ returnTo }: LoginFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const usernameInput = useRef<HTMLInputElement>(null);
   const passwordInput = useRef<HTMLInputElement>(null);
+  const hasCredentialError = submissionError === 'auth.invalidCredentials';
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -85,7 +87,11 @@ export default function LoginForm({ returnTo }: LoginFormProps) {
     try {
       const result = await login({ username: username.trim(), password });
       if (result.ok) router.replace(safeReturnTo(returnTo));
-      else setSubmissionError(errorKey(result.error));
+      else {
+        const nextSubmissionError = errorKey(result.error);
+        setSubmissionError(nextSubmissionError);
+        if (nextSubmissionError === 'auth.invalidCredentials') passwordInput.current?.focus();
+      }
     } finally {
       setPassword('');
       setSubmitting(false);
@@ -100,14 +106,25 @@ export default function LoginForm({ returnTo }: LoginFormProps) {
           <input
             ref={usernameInput}
             id="login-username"
-            className="checkout-input"
+            className={`checkout-input ${
+              errors.username || hasCredentialError
+                ? 'border-destructive focus:border-destructive focus:ring-destructive/20'
+                : ''
+            }`}
             autoComplete="username"
-            aria-invalid={Boolean(errors.username)}
-            aria-describedby={errors.username ? 'login-username-error' : undefined}
+            aria-invalid={Boolean(errors.username || hasCredentialError)}
+            aria-describedby={
+              errors.username
+                ? 'login-username-error'
+                : hasCredentialError
+                  ? 'login-submission-error'
+                  : undefined
+            }
             value={username}
             onChange={(event) => {
               setUsername(event.target.value);
               setErrors((current) => ({ ...current, username: undefined }));
+              setSubmissionError(undefined);
             }}
           />
           {errors.username && (
@@ -121,15 +138,26 @@ export default function LoginForm({ returnTo }: LoginFormProps) {
           <input
             ref={passwordInput}
             id="login-password"
-            className="checkout-input"
+            className={`checkout-input ${
+              errors.password || hasCredentialError
+                ? 'border-destructive focus:border-destructive focus:ring-destructive/20'
+                : ''
+            }`}
             type="password"
             autoComplete="current-password"
-            aria-invalid={Boolean(errors.password)}
-            aria-describedby={errors.password ? 'login-password-error' : undefined}
+            aria-invalid={Boolean(errors.password || hasCredentialError)}
+            aria-describedby={
+              errors.password
+                ? 'login-password-error'
+                : hasCredentialError
+                  ? 'login-submission-error'
+                  : undefined
+            }
             value={password}
             onChange={(event) => {
               setPassword(event.target.value);
               setErrors((current) => ({ ...current, password: undefined }));
+              setSubmissionError(undefined);
             }}
           />
           {errors.password && (
@@ -140,9 +168,14 @@ export default function LoginForm({ returnTo }: LoginFormProps) {
         </label>
       </div>
       {submissionError && (
-        <p role="alert" className="mt-4 text-sm text-destructive">
-          {t(submissionError)}
-        </p>
+        <div
+          id="login-submission-error"
+          role="alert"
+          className="mt-4 flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive"
+        >
+          <Icon name="ExclamationCircleIcon" size={20} className="mt-0.5 shrink-0" aria-hidden />
+          <span>{t(submissionError)}</span>
+        </div>
       )}
       {submitting && (
         <p role="status" aria-live="polite" className="sr-only">

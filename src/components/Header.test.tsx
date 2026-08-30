@@ -53,7 +53,7 @@ describe('Header', () => {
     );
   });
 
-  it('shows member account navigation and limits Admin to permission ID 1', async () => {
+  it('opens the authenticated username menu with Products, Checkout, and Sign out', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(
         JSON.stringify({
@@ -81,11 +81,56 @@ describe('Header', () => {
       </LanguageProvider>
     );
 
-    expect(await screen.findByRole('link', { name: 'Account' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Admin' })).toHaveAttribute('href', '/admin');
-    expect(screen.getByRole('button', { name: 'Logout' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Account' })).toHaveClass('xl:flex');
-    expect(screen.getByRole('link', { name: 'Admin' })).toHaveClass('xl:flex');
+    const accountMenu = await screen.findByRole('button', { name: 'admin' });
+    expect(accountMenu).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+
+    await userEvent.click(accountMenu);
+
+    expect(accountMenu).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('menuitem', { name: 'Products' })).toHaveAttribute('href', '/products');
+    expect(screen.getByRole('menuitem', { name: 'Checkout' })).toHaveAttribute('href', '/checkout');
+    expect(screen.queryByRole('menuitem', { name: 'My orders' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'Admin dashboard' })).not.toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Sign out' })).toHaveClass('text-destructive');
     expect(screen.getByRole('button', { name: 'Open menu' })).toHaveClass('xl:hidden');
+  });
+
+  it('closes the authenticated username menu with Escape', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          user: {
+            member_id: 2,
+            username: 'buyer',
+            first_name: 'Buy',
+            permission_id: 2,
+            permission_name: 'Member',
+          },
+        }),
+        { status: 200 }
+      )
+    );
+
+    render(
+      <LanguageProvider>
+        <ThemeProvider>
+          <CartProvider>
+            <AuthProvider>
+              <Header />
+            </AuthProvider>
+          </CartProvider>
+        </ThemeProvider>
+      </LanguageProvider>
+    );
+
+    const accountMenu = await screen.findByRole('button', { name: 'buyer' });
+    await userEvent.click(accountMenu);
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(accountMenu).toHaveFocus();
   });
 });
